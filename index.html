@@ -205,22 +205,30 @@
       ctx.fill();
     }
 
-    // -------- mascot follow physics --------
-    const targetX = mouse.x;
-    const targetY = mouse.y;
+        // -------- mascot fixed + look-at cursor --------
+    // Fixed anchor (choose one):
+    // center: const ax = innerWidth*0.52, ay = innerHeight*0.52;
+    // bottom-left: const ax = 140, ay = innerHeight - 160;
+    // bottom-right: const ax = innerWidth - 160, ay = innerHeight - 160;
 
-    const dx = targetX - m.x;
-    const dy = targetY - m.y;
-    m.vx = (m.vx + dx*SPRING) * DAMP;
-    m.vy = (m.vy + dy*SPRING) * DAMP;
-    m.x += m.vx;
-    m.y += m.vy;
+    const ax = innerWidth * 0.52;
+    const ay = innerHeight * 0.52;
 
-    const desiredRot = clamp(m.vx * 0.02, -MAX_ROT, MAX_ROT);
-    m.rot = m.rot*0.86 + desiredRot*0.14;
+    // keep mascot at anchor, only rotate/tilt towards cursor
+    const dxm = mouse.x - ax;
+    const dym = mouse.y - ay;
 
-    const left = m.x - M_SIZE/2;
-    const top  = m.y - M_SIZE/2;
+    // rotation based on horizontal direction (comic tilt)
+    const desiredRot = clamp(dxm * 0.0009, -MAX_ROT, MAX_ROT);
+    m.rot = m.rot * 0.85 + desiredRot * 0.15;
+
+    // optional tiny "parallax" nudge (very subtle, feels alive)
+    const nudge = 10; // px
+    const nx = clamp(dxm * 0.02, -nudge, nudge);
+    const ny = clamp(dym * 0.02, -nudge, nudge);
+
+    const left = (ax + nx) - M_SIZE/2;
+    const top  = (ay + ny) - M_SIZE/2;
 
     mascot.style.transform = `translate(${left}px, ${top}px) rotate(${m.rot}rad)`;
 
