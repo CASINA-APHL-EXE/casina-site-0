@@ -271,7 +271,6 @@
     });
 
     let headRoot = null;
-    let basePos = new THREE.Vector3(0,0,0);
 
     const loader = new GLTFLoader();
 
@@ -310,7 +309,6 @@
 
         // Move model so its center is at origin
         headGroup.position.sub(center);
-        basePos.copy(headGroup.position);
 
         // Scale so it fits view (target height ~1.4 units)
         const target = 1.4;
@@ -362,7 +360,7 @@
 
       headGroup.rotation.y = ry;
       headGroup.rotation.x = rx;
-      headGroup.position.set(basePos.x, basePos.y + bob, basePos.z);
+      headGroup.position.y = bob;
 
       renderer.render(scene, camera);
     }
