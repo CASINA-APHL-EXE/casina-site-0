@@ -89,7 +89,7 @@ function addHoloOverlay(root, options = {}) {
     const edgesMat = new THREE.LineBasicMaterial({
       color,
       transparent: true,
-      opacity: edgeOpacity,
+      opacity: edgeOpacity * (0.8 + Math.random()*0.2),
       blending: THREE.AdditiveBlending,
       depthWrite: false
     });
@@ -268,11 +268,17 @@ loader.load("/head.glb", (gltf)=>{
 
   // 可选：让原模型暗一点，线框更突出
   head.traverse((o)=>{
-    if (o.isMesh && o.material) {
-      o.material = o.material.clone();
-      if ("color" in o.material) o.material.color.multiplyScalar(0.55);
-    }
-  });
+  if (!o.isMesh) return;
+
+  // 隐藏实体模型
+  if (o.material){
+    o.material = o.material.clone();
+    o.material.transparent = true;
+    o.material.opacity = 0;
+    o.material.depthWrite = false;
+  }
+});
+  
 
   // ✅ 加 holo 线框叠层（关键）
   addHoloOverlay(head, {
