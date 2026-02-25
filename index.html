@@ -58,10 +58,16 @@ function addHoloOverlay(root, options = {}) {
   const wireOpacity = options.wireOpacity ?? 0.22;
   const edgeOpacity = options.edgeOpacity ?? 0.55;
 
+  // ① 先收集“原始 mesh”（避免边遍历边 add）
+  const meshes = [];
   root.traverse((obj) => {
     if (!obj.isMesh || !obj.geometry) return;
+    if (obj.userData.__isHoloPart) return; // 防止重复
+    meshes.push(obj);
+  });
 
-    // 1) wireframe layer
+  // ② 再统一加 overlay
+  for (const obj of meshes) {
     const wireMat = new THREE.MeshBasicMaterial({
       color,
       wireframe: true,
@@ -76,12 +82,9 @@ function addHoloOverlay(root, options = {}) {
     });
 
     const wire = new THREE.Mesh(obj.geometry, wireMat);
-    wire.position.copy(obj.position);
-    wire.rotation.copy(obj.rotation);
-    wire.scale.copy(obj.scale);
+    wire.userData.__isHoloPart = true;
     wire.renderOrder = 2;
 
-    // 2) edges layer (clean outline)
     const edgesGeo = new THREE.EdgesGeometry(obj.geometry, 28);
     const edgesMat = new THREE.LineBasicMaterial({
       color,
@@ -92,14 +95,12 @@ function addHoloOverlay(root, options = {}) {
     });
 
     const edges = new THREE.LineSegments(edgesGeo, edgesMat);
-    edges.position.copy(obj.position);
-    edges.rotation.copy(obj.rotation);
-    edges.scale.copy(obj.scale);
+    edges.userData.__isHoloPart = true;
     edges.renderOrder = 3;
 
     obj.add(wire);
     obj.add(edges);
-  });
+  }
 }
 /* ===== END HOLO OVERLAY HELPER ===== */
 
