@@ -43,24 +43,43 @@
 #portalUI .hex{
   pointer-events: auto;
   position: fixed;
+
   width: clamp(120px, 10vw, 190px);
   aspect-ratio: 1 / 1;
   display: grid;
   place-items: center;
-  color: rgba(0,255,255,0.75);
+
+  color: rgba(0,255,255,0.80);
   text-decoration: none;
   letter-spacing: clamp(2px, 0.35vw, 5px);
   font-size: clamp(14px, 1.25vw, 22px);
-  clip-path: polygon(25% 6%,75% 6%,97% 50%,75% 94%,25% 94%,3% 50%);
+
+  clip-path: polygon(
+    25% 6%, 75% 6%,
+    97% 50%,
+    75% 94%, 25% 94%,
+    3% 50%
+  );
+
+  /* flat fill (no gradient) */
   background: rgba(0,255,255,0.06);
+
   border: 1px solid rgba(0,255,255,0.22);
-  opacity: .70;
+
+  opacity: 0.70;
   transform: translate(-50%,-50%) scale(1);
-  transition: opacity .25s, transform .25s, border-color .25s, box-shadow .25s, filter .25s;
+  transition:
+    opacity .25s ease,
+    transform .25s ease,
+    border-color .25s ease,
+    box-shadow .25s ease,
+    filter .25s ease;
 }
+
 #portalUI .hex span{
+  opacity: 0.95;
   mix-blend-mode: screen;
-  text-shadow: 0 0 10px rgba(0,255,255,0.12);
+  text-shadow: 0 0 12px rgba(0,255,255,0.22);
 }
 #portalUI .hex::before{
   content:"";
