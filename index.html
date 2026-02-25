@@ -52,21 +52,19 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-/* ===== HOLO OVERLAY HELPER (PASTE HERE) ===== */
+/* ===== HOLO OVERLAY HELPER ===== */
 function addHoloOverlay(root, options = {}) {
   const color = options.color ?? 0x00ffff;
   const wireOpacity = options.wireOpacity ?? 0.22;
   const edgeOpacity = options.edgeOpacity ?? 0.55;
 
-  // ① 先收集“原始 mesh”（避免边遍历边 add）
   const meshes = [];
   root.traverse((obj) => {
     if (!obj.isMesh || !obj.geometry) return;
-    if (obj.userData.__isHoloPart) return; // 防止重复
+    if (obj.userData.__isHoloPart) return;
     meshes.push(obj);
   });
 
-  // ② 再统一加 overlay
   for (const obj of meshes) {
     const wireMat = new THREE.MeshBasicMaterial({
       color,
@@ -104,6 +102,7 @@ function addHoloOverlay(root, options = {}) {
 }
 /* ===== END HOLO OVERLAY HELPER ===== */
 
+
 /* =========================
    Particle Background (2D)
 ========================= */
@@ -111,21 +110,76 @@ const pCanvas = document.getElementById("particlesCanvas");
 const pCtx = pCanvas.getContext("2d");
 
 let W = 0, H = 0, DPR = 1;
+
+// responsive params
+let N = 140;
+let linkDist = 150;
+let mouseRadius = 260;
+let glowRadius = 160;
+let pointRadius = 1.9;
+
+let particles = [];
+
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+function lerp(a,b,t){ return a + (b-a)*t; }
+
+function recomputeParticleParams(){
+  const base = Math.min(W, H);
+
+  // density-based N (area scaled) + clamp for perf
+  // tweak density if you want: smaller denom => denser
+  const density = 1 / 9000; // ~1 particle per 9000 px
+  N = clamp(Math.round(W * H * density), 90, 240);
+
+  // link distance scales with short edge
+  linkDist = clamp(base * 0.18, 110, 220);
+
+  // mouse influence scales with short edge
+  mouseRadius = clamp(base * 0.32, 220, 420);
+
+  // glow radius scales too
+  glowRadius = clamp(base * 0.20, 140, 260);
+
+  // point radius mild scaling (don’t overdo)
+  pointRadius = clamp(base * 0.0022, 1.5, 2.3);
+}
+
+function rebuildParticles(keepMomentum=false){
+  const prev = particles;
+  particles = Array.from({length:N}, (_,i)=> {
+    const p = {
+      x: Math.random()*W,
+      y: Math.random()*H,
+      vx: (Math.random()*2-1)*0.25,
+      vy: (Math.random()*2-1)*0.25
+    };
+    if (keepMomentum && prev && prev[i]){
+      p.vx = prev[i].vx;
+      p.vy = prev[i].vy;
+    }
+    return p;
+  });
+}
+
 function resize2D(){
   DPR = Math.min(2, window.devicePixelRatio || 1);
   W = Math.floor(window.innerWidth);
   H = Math.floor(window.innerHeight);
+
   pCanvas.width = Math.floor(W * DPR);
   pCanvas.height = Math.floor(H * DPR);
   pCanvas.style.width = W + "px";
   pCanvas.style.height = H + "px";
   pCtx.setTransform(DPR,0,0,DPR,0,0);
+
+  recomputeParticleParams();
+  rebuildParticles(false);
 }
 resize2D();
 
 const mouse = { x: W/2, y: H/2, tx: W/2, ty: H/2, active:false };
 let lastMouseMove = performance.now();
-let mouseStrength = 0; // 0..1, smooth strength
+let mouseStrength = 0;
 
 window.addEventListener("mousemove",(e)=>{
   mouse.tx = e.clientX; mouse.ty = e.clientY;
@@ -134,85 +188,64 @@ window.addEventListener("mousemove",(e)=>{
 });
 window.addEventListener("mouseleave",()=>{ mouse.active = false; });
 
-function lerp(a,b,t){ return a + (b-a)*t; }
-
-const N = 140;
-const particles = Array.from({length:N},()=>({
-  x: Math.random()*W,
-  y: Math.random()*H,
-  vx: (Math.random()*2-1)*0.25,
-  vy: (Math.random()*2-1)*0.25
-}));
-
 function tickParticles(){
-  // smooth mouse
   mouse.x = lerp(mouse.x, mouse.tx, 0.18);
   mouse.y = lerp(mouse.y, mouse.ty, 0.18);
-    // mouse strength: if idle, strength fades out
+
   const now = performance.now();
-  const idle = Math.max(0, (now - lastMouseMove - 120) / 600); // 0 after 120ms, ramps to 1 over ~600ms
+  const idle = Math.max(0, (now - lastMouseMove - 120) / 600);
   const targetStrength = mouse.active ? (1 - Math.min(1, idle)) : 0;
   mouseStrength = lerp(mouseStrength, targetStrength, 0.08);
 
-  // clear (less smear, keep crisp)
   pCtx.clearRect(0,0,W,H);
   pCtx.fillStyle = "rgba(0,0,0,0.55)";
   pCtx.fillRect(0,0,W,H);
 
-  // --- mouse glow ---
+  // mouse glow (responsive)
   if (mouse.active){
-    const g = pCtx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 160);
+    const g = pCtx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, glowRadius);
     g.addColorStop(0, "rgba(0,255,255,0.18)");
     g.addColorStop(0.35, "rgba(0,255,255,0.06)");
     g.addColorStop(1, "rgba(0,255,255,0)");
     pCtx.fillStyle = g;
-    pCtx.fillRect(mouse.x-200, mouse.y-200, 400, 400);
+    const pad = glowRadius + 60;
+    pCtx.fillRect(mouse.x-pad, mouse.y-pad, pad*2, pad*2);
   }
 
-  // update particles
   for (const p of particles){
-
-    // --- idle drift (permanent life) ---
-    // tiny noise-like acceleration so it always moves
+    // idle drift
     p.vx += (Math.random()*2-1) * 0.02;
     p.vy += (Math.random()*2-1) * 0.02;
 
-    // --- cursor cohesion ---
     const dx = mouse.x - p.x;
     const dy = mouse.y - p.y;
     const dist = Math.hypot(dx,dy);
 
-    if (mouse.active && dist < 260){
-        const falloff = 1 - dist/260;
+    if (mouse.active && dist < mouseRadius){
+      const falloff = 1 - dist/mouseRadius;
 
-        // attraction fades when mouse is idle
-        const pull = falloff * falloff * 0.040 * mouseStrength;
-        p.vx += dx * pull;
-        p.vy += dy * pull;
+      const pull = falloff * falloff * 0.040 * mouseStrength;
+      p.vx += dx * pull;
+      p.vy += dy * pull;
 
-        // when mouse stops (mouseStrength low), gently push outward to "release" the cluster
-        const release = falloff * falloff * 0.010 * (1 - mouseStrength);
-        if (dist > 1e-3){
-            p.vx += (-dx / dist) * release;
-            p.vy += (-dy / dist) * release;
-        }
+      const release = falloff * falloff * 0.010 * (1 - mouseStrength);
+      if (dist > 1e-3){
+        p.vx += (-dx / dist) * release;
+        p.vy += (-dy / dist) * release;
+      }
     }
 
-    // integrate
     p.x += p.vx;
     p.y += p.vy;
 
-    // wrap
     if (p.x < -20) p.x = W+20;
     if (p.x > W+20) p.x = -20;
     if (p.y < -20) p.y = H+20;
     if (p.y > H+20) p.y = -20;
 
-    // damping (less damping so it doesn't "die")
     p.vx *= 0.994;
     p.vy *= 0.994;
 
-    // cap speed
     const sp = Math.hypot(p.vx,p.vy);
     const maxSp = 1.8;
     if (sp > maxSp){
@@ -221,15 +254,15 @@ function tickParticles(){
     }
   }
 
-  // draw links (a bit brighter + longer range)
+  // links (responsive linkDist)
   pCtx.lineWidth = 1;
   for (let i=0;i<N;i++){
     for (let j=i+1;j<N;j++){
       const a = particles[i], b = particles[j];
       const dx = a.x-b.x, dy=a.y-b.y;
       const d = Math.hypot(dx,dy);
-      if (d < 150){
-        const alpha = (1 - d/150) * 0.45;
+      if (d < linkDist){
+        const alpha = (1 - d/linkDist) * 0.45;
         pCtx.strokeStyle = `rgba(0,255,255,${alpha})`;
         pCtx.beginPath();
         pCtx.moveTo(a.x,a.y);
@@ -239,17 +272,18 @@ function tickParticles(){
     }
   }
 
-  // draw points (slightly bigger, punchier)
+  // points (responsive radius)
   for (const p of particles){
     pCtx.fillStyle = "rgba(0,255,255,0.9)";
     pCtx.beginPath();
-    pCtx.arc(p.x,p.y,1.9,0,Math.PI*2);
+    pCtx.arc(p.x,p.y,pointRadius,0,Math.PI*2);
     pCtx.fill();
   }
 
   requestAnimationFrame(tickParticles);
 }
 tickParticles();
+
 
 /* =========================
    Three.js Layer (3D)
@@ -265,7 +299,6 @@ renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
 renderer.domElement.className = "threeCanvas";
 document.body.appendChild(renderer.domElement);
 
-// lighting (neutral now; later we do cyan holo)
 scene.add(new THREE.AmbientLight(0xffffff, 0.9));
 const key = new THREE.DirectionalLight(0xffffff, 1.2);
 key.position.set(2,2,4);
@@ -273,30 +306,23 @@ scene.add(key);
 
 let head = null;
 
-// load GLB
 const loader = new GLTFLoader();
 loader.load("/head.glb", (gltf)=>{
   head = gltf.scene;
 
-  // ✅ 更居中：从 -0.15 改到 -0.02
   head.position.set(0, 0, 0);
   head.scale.set(2.6, 2.6, 2.6);
 
-  // 可选：让原模型暗一点，线框更突出
   head.traverse((o)=>{
-  if (!o.isMesh) return;
+    if (!o.isMesh) return;
+    if (o.material){
+      o.material = o.material.clone();
+      o.material.transparent = true;
+      o.material.opacity = 0;
+      o.material.depthWrite = false;
+    }
+  });
 
-  // 隐藏实体模型
-  if (o.material){
-    o.material = o.material.clone();
-    o.material.transparent = true;
-    o.material.opacity = 0;
-    o.material.depthWrite = false;
-  }
-});
-  
-
-  // ✅ 加 holo 线框叠层（关键）
   addHoloOverlay(head, {
     color: 0x00ffff,
     wireOpacity: 0.18,
@@ -304,40 +330,35 @@ loader.load("/head.glb", (gltf)=>{
   });
 
   scene.add(head);
-
   console.log("GLB LOADED + HOLO");
 }, undefined, (err)=>{
   console.error("GLB load error", err);
 });
 
-/* mouse -> head follow */
 const m3 = { x:0, y:0 };
 window.addEventListener("mousemove",(e)=>{
-  m3.x = (e.clientX / window.innerWidth) * 2 - 1;     // -1..1
-  m3.y = (e.clientY / window.innerHeight) * 2 - 1;    // -1..1
+  m3.x = (e.clientX / window.innerWidth) * 2 - 1;
+  m3.y = (e.clientY / window.innerHeight) * 2 - 1;
 });
 
-/* resize */
 window.addEventListener("resize", ()=>{
   resize2D();
+
   camera.aspect = window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-/* render loop */
 let t = 0;
 function animate(){
   requestAnimationFrame(animate);
   t += 0.016;
 
-  // subtle float
   if (head){
     head.position.y =
-    Math.sin(t*0.9)*0.07 +
-    Math.sin(t*0.35)*0.02;
+      Math.sin(t*0.9)*0.07 +
+      Math.sin(t*0.35)*0.02;
 
-    // cursor tracking rotation
     const targetY = m3.x * 0.45;
     const targetX = m3.y * 0.25;
     head.rotation.y = lerp(head.rotation.y, targetY, 0.08);
