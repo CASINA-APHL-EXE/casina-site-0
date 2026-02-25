@@ -81,7 +81,7 @@ window.addEventListener("mouseleave",()=>{ mouse.active = false; });
 
 function lerp(a,b,t){ return a + (b-a)*t; }
 
-const N = 90;
+const N = 140;
 const particles = Array.from({length:N},()=>({
   x: Math.random()*W,
   y: Math.random()*H,
@@ -91,59 +91,77 @@ const particles = Array.from({length:N},()=>({
 
 function tickParticles(){
   // smooth mouse
-  mouse.x = lerp(mouse.x, mouse.tx, 0.12);
-  mouse.y = lerp(mouse.y, mouse.ty, 0.12);
+  mouse.x = lerp(mouse.x, mouse.tx, 0.18);
+  mouse.y = lerp(mouse.y, mouse.ty, 0.18);
 
+  // clear (less smear, keep crisp)
   pCtx.clearRect(0,0,W,H);
-
-  // fade background slightly for slick look
-  pCtx.fillStyle = "rgba(0,0,0,0.25)";
+  pCtx.fillStyle = "rgba(0,0,0,0.55)";
   pCtx.fillRect(0,0,W,H);
+
+  // --- mouse glow ---
+  if (mouse.active){
+    const g = pCtx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 160);
+    g.addColorStop(0, "rgba(0,255,255,0.18)");
+    g.addColorStop(0.35, "rgba(0,255,255,0.06)");
+    g.addColorStop(1, "rgba(0,255,255,0)");
+    pCtx.fillStyle = g;
+    pCtx.fillRect(mouse.x-200, mouse.y-200, 400, 400);
+  }
 
   // update particles
   for (const p of particles){
-    // idle drift
-    p.x += p.vx;
-    p.y += p.vy;
 
-    // bounds
-    if (p.x < 0) p.x = W;
-    if (p.x > W) p.x = 0;
-    if (p.y < 0) p.y = H;
-    if (p.y > H) p.y = 0;
+    // --- idle drift (permanent life) ---
+    // tiny noise-like acceleration so it always moves
+    p.vx += (Math.random()*2-1) * 0.015;
+    p.vy += (Math.random()*2-1) * 0.015;
 
-    // cursor cohesion
+    // --- cursor cohesion ---
     const dx = mouse.x - p.x;
     const dy = mouse.y - p.y;
     const dist = Math.hypot(dx,dy);
 
-    if (dist < 180){
-      const pull = (1 - dist/180) * 0.015;
+    if (mouse.active && dist < 260){
+      // stronger near cursor, smoother falloff
+      const falloff = 1 - dist/260;
+      const pull = falloff * falloff * 0.035; // quadratic
       p.vx += dx * pull;
       p.vy += dy * pull;
     }
 
-    // damping
-    p.vx *= 0.985;
-    p.vy *= 0.985;
+    // integrate
+    p.x += p.vx;
+    p.y += p.vy;
+
+    // wrap
+    if (p.x < -20) p.x = W+20;
+    if (p.x > W+20) p.x = -20;
+    if (p.y < -20) p.y = H+20;
+    if (p.y > H+20) p.y = -20;
+
+    // damping (less damping so it doesn't "die")
+    p.vx *= 0.992;
+    p.vy *= 0.992;
 
     // cap speed
     const sp = Math.hypot(p.vx,p.vy);
-    if (sp > 1.2){
-      p.vx *= 1.2/sp;
-      p.vy *= 1.2/sp;
+    const maxSp = 1.8;
+    if (sp > maxSp){
+      p.vx *= maxSp/sp;
+      p.vy *= maxSp/sp;
     }
   }
 
-  // draw links
+  // draw links (a bit brighter + longer range)
   pCtx.lineWidth = 1;
   for (let i=0;i<N;i++){
     for (let j=i+1;j<N;j++){
       const a = particles[i], b = particles[j];
       const dx = a.x-b.x, dy=a.y-b.y;
       const d = Math.hypot(dx,dy);
-      if (d < 120){
-        const alpha = (1 - d/120) * 0.35;
+      if (d < 150){
+        const alpha = (1 - d/150) * 0.45;
         pCtx.strokeStyle = `rgba(0,255,255,${alpha})`;
         pCtx.beginPath();
         pCtx.moveTo(a.x,a.y);
@@ -153,11 +171,11 @@ function tickParticles(){
     }
   }
 
-  // draw points
+  // draw points (slightly bigger, punchier)
   for (const p of particles){
-    pCtx.fillStyle = "rgba(0,255,255,0.8)";
+    pCtx.fillStyle = "rgba(0,255,255,0.9)";
     pCtx.beginPath();
-    pCtx.arc(p.x,p.y,1.6,0,Math.PI*2);
+    pCtx.arc(p.x,p.y,1.9,0,Math.PI*2);
     pCtx.fill();
   }
 
@@ -171,7 +189,7 @@ tickParticles();
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 100);
-camera.position.set(0, 0.15, 2.6);
+camera.position.set(0, 0.15, 2.4);
 
 const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -194,7 +212,7 @@ loader.load("/head.glb", (gltf)=>{
 
   // center-ish + scale
   head.position.set(0, -0.15, 0);
-  head.scale.set(1.4,1.4,1.4);
+  head.scale.set(2.6,2.6,2.6);
 
   scene.add(head);
 }, undefined, (err)=>console.error("GLB load error", err));
@@ -225,8 +243,8 @@ function animate(){
     head.position.y = -0.15 + Math.sin(t*0.8)*0.03;
 
     // cursor tracking rotation
-    const targetY = -m3.x * 0.35;
-    const targetX = -m3.y * 0.20;
+    const targetY = m3.x * 0.45;
+    const targetX = m3.y * 0.25;
     head.rotation.y = lerp(head.rotation.y, targetY, 0.08);
     head.rotation.x = lerp(head.rotation.x, targetX, 0.08);
   }
