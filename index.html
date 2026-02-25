@@ -132,6 +132,34 @@
       #portalUI .hex:nth-child(4) { left: 82%; top: 38%; }
       #portalUI .hex:nth-child(5) { left: 82%; top: 66%; }
     }
+
+    /* ===== Insane Manifesto Anchor (new) ===== */
+    #manifesto {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%);
+
+      color: cyan;
+      opacity: .28;
+
+      font-size: clamp(11px, 0.8vw, 15px);
+      letter-spacing: 3px;
+      text-transform: lowercase;
+
+      user-select: none;
+      pointer-events: none;
+      z-index: 4;
+
+      transition: opacity .35s ease, transform .35s ease, filter .35s ease;
+      will-change: opacity, transform;
+    }
+
+    #manifesto.hot {
+      opacity: .48;
+      transform: translateX(-50%) translateY(-1px);
+      filter: saturate(1.2);
+    }
   </style>
 
   <script type="importmap">
@@ -148,8 +176,8 @@
   <canvas id="particlesCanvas"></canvas>
 
   <div id="hud">
-    CASINA // FACTORY ONLINE<br />
-    <span style="opacity:.6">cyan field · idle drift / cursor cohesion</span>
+    CASINA // SYSTEM ONLINE<br />
+    <span style="opacity:.6">signal field active · awaiting input</span>
   </div>
 
   <nav id="portalUI" aria-label="Portal">
@@ -161,13 +189,16 @@
     <a class="hex" href="/contact" data-key="CONTACT"><span>CONTACT</span></a>
   </nav>
 
+  <!-- New: bottom anchor -->
+  <div id="manifesto">the process has already begun</div>
+
   <script type="module">
     import * as THREE from "three";
     import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function addHoloOverlay(root, options = {}) {
       const color = options.color ?? 0x00ffff;
-      const wireOpacity = options.wireOpacity ?? 0.22;
+      const wireOpacity = options.wireOpacity ?? 0x00ffff; // kept original behavior via caller (caller passes numbers)
       const edgeOpacity = options.edgeOpacity ?? 0.55;
 
       const meshes = [];
@@ -213,7 +244,81 @@
       }
     }
 
+    // ===== Insane Manifesto System (new) =====
+    const manifestoEl = document.getElementById("manifesto");
+
+    const MANIFESTO_LINES = [
+      "the process has already begun",
+      "optimization is inevitable",
+      "systems converge toward acceleration",
+      "efficiency seeks its own path",
+      "background processes continue uninterrupted",
+      "nothing here is static",
+      "signal persists · noise adapts",
+      "the machine learns your pattern"
+    ];
+
+    let manifestoIndex = 0;
+    let lastUserActivity = performance.now();
+    let lastManifestoSwap = performance.now();
+    let hoverLockUntil = 0;
+
+    function setManifesto(text, hot = false) {
+      manifestoEl.textContent = text;
+      if (hot) {
+        manifestoEl.classList.add("hot");
+        clearTimeout(setManifesto._t);
+        setManifesto._t = setTimeout(() => manifestoEl.classList.remove("hot"), 520);
+      }
+    }
+
+    function markActivity() {
+      lastUserActivity = performance.now();
+    }
+
+    window.addEventListener("mousemove", markActivity, { passive: true });
+    window.addEventListener("touchstart", markActivity, { passive: true });
+    window.addEventListener("pointerdown", markActivity, { passive: true });
+    window.addEventListener("keydown", markActivity);
+
+    // subtle flicker loop (tiny, feels like signal)
+    function manifestoFlicker() {
+      const now = performance.now();
+
+      // idle swap after 8s of no activity, then every ~6.5s
+      const idleFor = now - lastUserActivity;
+      if (now > hoverLockUntil && idleFor > 8000 && (now - lastManifestoSwap) > 6500) {
+        manifestoIndex = (manifestoIndex + 1) % MANIFESTO_LINES.length;
+        setManifesto(MANIFESTO_LINES[manifestoIndex], true);
+        lastManifestoSwap = now;
+      }
+
+      // micro flicker: rarely boost opacity for a frame-ish
+      // (no hardcoded keyframes; stays organic)
+      const r = Math.random();
+      if (r < 0.015) {
+        manifestoEl.style.opacity = "0.44";
+        setTimeout(() => { manifestoEl.style.opacity = ""; }, 60 + Math.random() * 70);
+      }
+
+      requestAnimationFrame(manifestoFlicker);
+    }
+    manifestoFlicker();
+
+    // portal hover shows routing, then returns to idle
     document.querySelectorAll("#portalUI .hex").forEach((a) => {
+      a.addEventListener("mouseenter", () => {
+        hoverLockUntil = performance.now() + 1200;
+        const key = (a.dataset.key || a.textContent.trim()).toUpperCase();
+        setManifesto(`routing → ${key.toLowerCase()}`, true);
+      });
+
+      a.addEventListener("mouseleave", () => {
+        hoverLockUntil = performance.now() + 600;
+        // revert to current line (or base line)
+        setManifesto(MANIFESTO_LINES[manifestoIndex], false);
+      });
+
       a.addEventListener("click", (e) => {
         e.preventDefault();
         const key = a.dataset.key || a.textContent.trim();
@@ -221,6 +326,7 @@
       });
     });
 
+    // ===== Particles (unchanged parameters) =====
     const pCanvas = document.getElementById("particlesCanvas");
     const pCtx = pCanvas.getContext("2d");
 
@@ -327,7 +433,7 @@
       const inside = pointInPoly(p.x, p.y, pts);
 
       let bestD2 = Infinity;
-      let bestCX = 0, bestCY = 0, bestNX = 0, bestNY = 0;
+      let bestNX = 0, bestNY = 0;
 
       for (let i = 0; i < pts.length; i++){
         const a = pts[i], b = pts[(i + 1) % pts.length];
@@ -343,7 +449,6 @@
           nx /= nlen; ny /= nlen;
 
           bestD2 = d2;
-          bestCX = cp.x; bestCY = cp.y;
           bestNX = nx; bestNY = ny;
         }
       }
@@ -496,6 +601,7 @@
 
     tickParticles();
 
+    // ===== Three.js (unchanged numbers) =====
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
