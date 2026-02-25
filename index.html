@@ -128,7 +128,7 @@ function recomputeParticleParams(){
 
   // density-based N (area scaled) + clamp for perf
   // tweak density if you want: smaller denom => denser
-  const density = 1 / 9000; // ~1 particle per 9000 px
+  const density = 1 / 7000; // ~1 particle per 7000 px
   N = clamp(Math.round(W * H * density), 90, 240);
 
   // link distance scales with short edge
