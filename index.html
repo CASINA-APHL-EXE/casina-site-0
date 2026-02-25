@@ -1,166 +1,239 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>CASINA</title>
 
 <style>
-html, body {
-margin:0;
-overflow:hidden;
-background:black;
-font-family:monospace;
-}
+  html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; font-family:monospace; }
 
-#hud{
-position:fixed;
-top:20px;
-left:20px;
-color:cyan;
-opacity:.7;
-letter-spacing:2px;
-}
+  /* layer stack */
+  #particlesCanvas{
+    position:fixed; inset:0;
+    width:100vw; height:100vh;
+    z-index:0;
+  }
+  canvas.threeCanvas{
+    position:fixed; inset:0;
+    width:100vw; height:100vh;
+    z-index:1;
+    pointer-events:none; /* so mouse still hits particle layer */
+  }
+
+  #hud{
+    position:fixed;
+    top:20px; left:20px;
+    color:cyan; opacity:.7;
+    letter-spacing:2px;
+    z-index:2;
+    user-select:none;
+    pointer-events:none;
+  }
 </style>
 
-<!-- import map (modern three.js) -->
-
+<!-- modern three.js -->
 <script type="importmap">
 {
   "imports": {
-    "three":
-"https://unpkg.com/three@0.160.0/build/three.module.js",
-    "three/addons/":
-"https://unpkg.com/three@0.160.0/examples/jsm/"
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
   }
 }
 </script>
-
 </head>
 
 <body>
+<canvas id="particlesCanvas"></canvas>
 
-<div id="hud">
-CASINA // FACTORY ONLINE
-</div>
+<div id="hud">CASINA // FACTORY ONLINE<br><span style="opacity:.6">cyan field · idle drift / cursor cohesion</span></div>
 
 <script type="module">
-
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-/* ---------------- scene ---------------- */
+/* =========================
+   Particle Background (2D)
+========================= */
+const pCanvas = document.getElementById("particlesCanvas");
+const pCtx = pCanvas.getContext("2d");
 
+let W = 0, H = 0, DPR = 1;
+function resize2D(){
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = Math.floor(window.innerWidth);
+  H = Math.floor(window.innerHeight);
+  pCanvas.width = Math.floor(W * DPR);
+  pCanvas.height = Math.floor(H * DPR);
+  pCanvas.style.width = W + "px";
+  pCanvas.style.height = H + "px";
+  pCtx.setTransform(DPR,0,0,DPR,0,0);
+}
+resize2D();
+
+const mouse = { x: W/2, y: H/2, tx: W/2, ty: H/2, active:false };
+
+window.addEventListener("mousemove",(e)=>{
+  mouse.tx = e.clientX; mouse.ty = e.clientY;
+  mouse.active = true;
+});
+window.addEventListener("mouseleave",()=>{ mouse.active = false; });
+
+function lerp(a,b,t){ return a + (b-a)*t; }
+
+const N = 90;
+const particles = Array.from({length:N},()=>({
+  x: Math.random()*W,
+  y: Math.random()*H,
+  vx: (Math.random()*2-1)*0.25,
+  vy: (Math.random()*2-1)*0.25
+}));
+
+function tickParticles(){
+  // smooth mouse
+  mouse.x = lerp(mouse.x, mouse.tx, 0.12);
+  mouse.y = lerp(mouse.y, mouse.ty, 0.12);
+
+  pCtx.clearRect(0,0,W,H);
+
+  // fade background slightly for slick look
+  pCtx.fillStyle = "rgba(0,0,0,0.25)";
+  pCtx.fillRect(0,0,W,H);
+
+  // update particles
+  for (const p of particles){
+    // idle drift
+    p.x += p.vx;
+    p.y += p.vy;
+
+    // bounds
+    if (p.x < 0) p.x = W;
+    if (p.x > W) p.x = 0;
+    if (p.y < 0) p.y = H;
+    if (p.y > H) p.y = 0;
+
+    // cursor cohesion
+    const dx = mouse.x - p.x;
+    const dy = mouse.y - p.y;
+    const dist = Math.hypot(dx,dy);
+
+    if (dist < 180){
+      const pull = (1 - dist/180) * 0.015;
+      p.vx += dx * pull;
+      p.vy += dy * pull;
+    }
+
+    // damping
+    p.vx *= 0.985;
+    p.vy *= 0.985;
+
+    // cap speed
+    const sp = Math.hypot(p.vx,p.vy);
+    if (sp > 1.2){
+      p.vx *= 1.2/sp;
+      p.vy *= 1.2/sp;
+    }
+  }
+
+  // draw links
+  pCtx.lineWidth = 1;
+  for (let i=0;i<N;i++){
+    for (let j=i+1;j<N;j++){
+      const a = particles[i], b = particles[j];
+      const dx = a.x-b.x, dy=a.y-b.y;
+      const d = Math.hypot(dx,dy);
+      if (d < 120){
+        const alpha = (1 - d/120) * 0.35;
+        pCtx.strokeStyle = `rgba(0,255,255,${alpha})`;
+        pCtx.beginPath();
+        pCtx.moveTo(a.x,a.y);
+        pCtx.lineTo(b.x,b.y);
+        pCtx.stroke();
+      }
+    }
+  }
+
+  // draw points
+  for (const p of particles){
+    pCtx.fillStyle = "rgba(0,255,255,0.8)";
+    pCtx.beginPath();
+    pCtx.arc(p.x,p.y,1.6,0,Math.PI*2);
+    pCtx.fill();
+  }
+
+  requestAnimationFrame(tickParticles);
+}
+tickParticles();
+
+/* =========================
+   Three.js Layer (3D)
+========================= */
 const scene = new THREE.Scene();
 
-/* camera */
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.set(0, 0.15, 2.6);
 
-const camera = new THREE.PerspectiveCamera(
-60,
-window.innerWidth/window.innerHeight,
-0.1,
-100
-);
-
-camera.position.z = 3;
-
-/* renderer */
-
-const renderer = new THREE.WebGLRenderer({
-antialias:true,
-alpha:true
-});
-
-renderer.setSize(
-window.innerWidth,
-window.innerHeight
-);
-
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+renderer.domElement.className = "threeCanvas";
 document.body.appendChild(renderer.domElement);
 
-/* light */
+// lighting (neutral now; later we do cyan holo)
+scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+const key = new THREE.DirectionalLight(0xffffff, 1.2);
+key.position.set(2,2,4);
+scene.add(key);
 
-const light = new THREE.DirectionalLight(0xffffff,2);
-light.position.set(2,2,5);
-scene.add(light);
+let head = null;
 
-scene.add(new THREE.AmbientLight(0xffffff,.6));
-
-/* debug cube */
-
-const cube = new THREE.Mesh(
-new THREE.BoxGeometry(),
-new THREE.MeshNormalMaterial()
-);
-
-cube.position.x = -1.5;
-scene.add(cube);
-
-/* axes */
-
-scene.add(new THREE.AxesHelper(2));
-
-/* ---------------- load GLB ---------------- */
-
+// load GLB
 const loader = new GLTFLoader();
+loader.load("/head.glb", (gltf)=>{
+  head = gltf.scene;
 
-loader.load(
+  // center-ish + scale
+  head.position.set(0, -0.15, 0);
+  head.scale.set(1.4,1.4,1.4);
 
-"/head.glb",
+  scene.add(head);
+}, undefined, (err)=>console.error("GLB load error", err));
 
-(gltf)=>{
-
-const model = gltf.scene;
-
-model.position.x = 1.2;
-model.scale.set(1.5,1.5,1.5);
-
-scene.add(model);
-
-console.log("GLB LOADED");
-
-},
-
-undefined,
-
-(err)=>{
-console.error(err);
-}
-
-);
+/* mouse -> head follow */
+const m3 = { x:0, y:0 };
+window.addEventListener("mousemove",(e)=>{
+  m3.x = (e.clientX / window.innerWidth) * 2 - 1;     // -1..1
+  m3.y = (e.clientY / window.innerHeight) * 2 - 1;    // -1..1
+});
 
 /* resize */
-
-window.addEventListener("resize",()=>{
-
-camera.aspect =
-window.innerWidth/window.innerHeight;
-
-camera.updateProjectionMatrix();
-
-renderer.setSize(
-window.innerWidth,
-window.innerHeight
-);
-
+window.addEventListener("resize", ()=>{
+  resize2D();
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 /* render loop */
-
+let t = 0;
 function animate(){
+  requestAnimationFrame(animate);
+  t += 0.016;
 
-requestAnimationFrame(animate);
+  // subtle float
+  if (head){
+    head.position.y = -0.15 + Math.sin(t*0.8)*0.03;
 
-cube.rotation.x += .01;
-cube.rotation.y += .01;
+    // cursor tracking rotation
+    const targetY = -m3.x * 0.35;
+    const targetX = -m3.y * 0.20;
+    head.rotation.y = lerp(head.rotation.y, targetY, 0.08);
+    head.rotation.x = lerp(head.rotation.x, targetX, 0.08);
+  }
 
-renderer.render(scene,camera);
-
+  renderer.render(scene, camera);
 }
-
 animate();
-
 </script>
-
 </body>
 </html>
