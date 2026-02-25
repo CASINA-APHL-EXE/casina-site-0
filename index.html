@@ -214,8 +214,8 @@ function tickParticles(){
 
   for (const p of particles){
     // idle drift
-    p.vx += (Math.random()*2-1) * 0.02;
-    p.vy += (Math.random()*2-1) * 0.02;
+    p.vx += (Math.random()*2-1) * 0.05;
+    p.vy += (Math.random()*2-1) * 0.05;
 
     const dx = mouse.x - p.x;
     const dy = mouse.y - p.y;
