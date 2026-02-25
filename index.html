@@ -254,13 +254,14 @@
 
     const MANIFESTO_LINES = [
       "the process has already begun",
-      "optimization is inevitable",
-      "systems converge toward acceleration",
-      "efficiency seeks its own path",
-      "background processes continue uninterrupted",
+      "the machine learns your pattern",
+      "acceleration cannot be reversed",
+      "systems evolve beyond intention",
+      "efficiency selects its own future",
+      "factory expansion imminent",
       "nothing here is static",
-      "signal persists · noise adapts",
-      "the machine learns your pattern"
+      "the system remembers you",
+      "input was never required"
     ];
 
     let manifestoIndex = 0;
@@ -292,7 +293,7 @@
 
       // idle swap after 8s of no activity, then every ~6.5s
       const idleFor = now - lastUserActivity;
-      if (now > hoverLockUntil && idleFor > 8000 && (now - lastManifestoSwap) > 6500) {
+      if (now > hoverLockUntil && idleFor > 4500 && (now - lastManifestoSwap) > 4200) {
         manifestoIndex = (manifestoIndex + 1) % MANIFESTO_LINES.length;
         setManifesto(MANIFESTO_LINES[manifestoIndex], true);
         lastManifestoSwap = now;
