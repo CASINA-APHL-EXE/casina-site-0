@@ -1,479 +1,579 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>CASINA</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CASINA</title>
 
-<style>
-  html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; font-family:monospace; }
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: monospace;
+    }
 
-  /* layer stack */
-  #particlesCanvas{
-    position:fixed; inset:0;
-    width:100vw; height:100vh;
-    z-index:0;
+    #particlesCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+    }
+
+    canvas.threeCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    #hud {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      color: cyan;
+      opacity: .7;
+      letter-spacing: clamp(2px, 0.35vw, 5px);
+      z-index: 2;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    #portalUI {
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    #portalUI .hex {
+      pointer-events: auto;
+      position: fixed;
+
+      width: clamp(120px, 10vw, 190px);
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+
+      color: rgba(0,255,255,0.80);
+      text-decoration: none;
+      letter-spacing: clamp(2px, 0.35vw, 5px);
+      font-size: clamp(14px, 1.25vw, 22px);
+
+      clip-path: polygon(
+        25% 6%, 75% 6%,
+        97% 50%,
+        75% 94%, 25% 94%,
+        3% 50%
+      );
+
+      background: rgba(0,255,255,0.06);
+      border: 1px solid rgba(0,255,255,0.22);
+
+      opacity: 0.70;
+      transform: translate(-50%,-50%) scale(1);
+      transition:
+        opacity .25s ease,
+        transform .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease,
+        filter .25s ease;
+    }
+
+    #portalUI .hex span {
+      opacity: 0.95;
+      mix-blend-mode: screen;
+      text-shadow: 0 0 12px rgba(0,255,255,0.22);
+    }
+
+    #portalUI .hex::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      clip-path: inherit;
+      border: 1px solid rgba(0,255,255,0.12);
+      opacity: .85;
+    }
+
+    #portalUI .hex:hover {
+      opacity: 1;
+      transform: translate(-50%,-50%) scale(1.08);
+      border-color: rgba(0,255,255,0.55);
+      box-shadow:
+        0 0 20px rgba(0,255,255,0.18),
+        0 0 45px rgba(0,255,255,0.10),
+        inset 0 0 30px rgba(0,255,255,0.08);
+      filter: saturate(1.2);
+    }
+
+    #portalUI .hex:active {
+      transform: translate(-50%,-50%) scale(1.02);
+    }
+
+    #portalUI .hex:nth-child(1) { left: 50%; top: 18%; }
+    #portalUI .hex:nth-child(2) { left: 22%; top: 36%; }
+    #portalUI .hex:nth-child(3) { left: 22%; top: 66%; }
+    #portalUI .hex:nth-child(4) { left: 78%; top: 36%; }
+    #portalUI .hex:nth-child(5) { left: 78%; top: 66%; }
+    #portalUI .hex:nth-child(6) { left: 50%; top: 84%; }
+
+    @media (max-width: 720px) {
+      #portalUI .hex { width: 104px; font-size: 12px; letter-spacing: 2px; }
+      #portalUI .hex:nth-child(2) { left: 18%; top: 38%; }
+      #portalUI .hex:nth-child(3) { left: 18%; top: 66%; }
+      #portalUI .hex:nth-child(4) { left: 82%; top: 38%; }
+      #portalUI .hex:nth-child(5) { left: 82%; top: 66%; }
+    }
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
   }
-  canvas.threeCanvas{
-    position:fixed; inset:0;
-    width:100vw; height:100vh;
-    z-index:1;
-    pointer-events:none; /* so mouse still hits particle layer */
-  }
-
-  #hud{
-    position:fixed;
-    top:20px; left:20px;
-    color:cyan; opacity:.7;
-    letter-spacing:clamp(2px, 0.35vw, 5px);
-    z-index:2;
-    user-select:none;
-    pointer-events:none;
-  }
-</style>
-
-<style>
-/* ===== Hex Portal UI ===== */
-#portalUI{
-  position: fixed;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-}
-#portalUI .hex{
-  pointer-events: auto;
-  position: fixed;
-
-  width: clamp(120px, 10vw, 190px);
-  aspect-ratio: 1 / 1;
-  display: grid;
-  place-items: center;
-
-  color: rgba(0,255,255,0.80);
-  text-decoration: none;
-  letter-spacing: clamp(2px, 0.35vw, 5px);
-  font-size: clamp(14px, 1.25vw, 22px);
-
-  clip-path: polygon(
-    25% 6%, 75% 6%,
-    97% 50%,
-    75% 94%, 25% 94%,
-    3% 50%
-  );
-
-  /* flat fill (no gradient) */
-  background: rgba(0,255,255,0.06);
-
-  border: 1px solid rgba(0,255,255,0.22);
-
-  opacity: 0.70;
-  transform: translate(-50%,-50%) scale(1);
-  transition:
-    opacity .25s ease,
-    transform .25s ease,
-    border-color .25s ease,
-    box-shadow .25s ease,
-    filter .25s ease;
-}
-
-#portalUI .hex span{
-  opacity: 0.95;
-  mix-blend-mode: screen;
-  text-shadow: 0 0 12px rgba(0,255,255,0.22);
-}
-#portalUI .hex::before{
-  content:"";
-  position:absolute; inset:10px;
-  clip-path: inherit;
-  border: 1px solid rgba(0,255,255,0.12);
-  opacity: .85;
-}
-#portalUI .hex:hover{
-  opacity: 1;
-  transform: translate(-50%,-50%) scale(1.08);
-  border-color: rgba(0,255,255,0.55);
-  box-shadow: 0 0 20px rgba(0,255,255,0.18), 0 0 45px rgba(0,255,255,0.10), inset 0 0 30px rgba(0,255,255,0.08);
-  filter: saturate(1.2);
-}
-#portalUI .hex:active{
-  transform: translate(-50%,-50%) scale(1.02);
-}
-#portalUI .hex:nth-child(1){ left:50%; top:18%; }
-#portalUI .hex:nth-child(2){ left:22%; top:36%; }
-#portalUI .hex:nth-child(3){ left:22%; top:66%; }
-#portalUI .hex:nth-child(4){ left:78%; top:36%; }
-#portalUI .hex:nth-child(5){ left:78%; top:66%; }
-#portalUI .hex:nth-child(6){ left:50%; top:84%; }
-
-@media (max-width: 720px){
-  #portalUI .hex{ width:104px; font-size:12px; letter-spacing:2px; }
-  #portalUI .hex:nth-child(2){ left:18%; top:38%; }
-  #portalUI .hex:nth-child(3){ left:18%; top:66%; }
-  #portalUI .hex:nth-child(4){ left:82%; top:38%; }
-  #portalUI .hex:nth-child(5){ left:82%; top:66%; }
-}
-</style>
-    
-
-<!-- modern three.js -->
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-  }
-}
-</script>
+  </script>
 </head>
 
 <body>
-<canvas id="particlesCanvas"></canvas>
+  <canvas id="particlesCanvas"></canvas>
 
-<div id="hud">
-  CASINA // FACTORY ONLINE<br>
-  <span style="opacity:.6">cyan field · idle drift / cursor cohesion</span>
-</div>
+  <div id="hud">
+    CASINA // FACTORY ONLINE<br />
+    <span style="opacity:.6">cyan field · idle drift / cursor cohesion</span>
+  </div>
 
-<nav id="portalUI" aria-label="Portal">
-  <a class="hex" href="/art" data-key="ART"><span>ART</span></a>
-  <a class="hex" href="/lab" data-key="LAB"><span>LAB</span></a>
-  <a class="hex" href="/archive" data-key="ARCHIVE"><span>ARCHIVE</span></a>
-  <a class="hex" href="/store" data-key="STORE"><span>STORE</span></a>
-  <a class="hex" href="/company" data-key="COMPANY"><span>COMPANY</span></a>
-  <a class="hex" href="/contact" data-key="CONTACT"><span>CONTACT</span></a>
-</nav>
+  <nav id="portalUI" aria-label="Portal">
+    <a class="hex" href="/art" data-key="ART"><span>ART</span></a>
+    <a class="hex" href="/lab" data-key="LAB"><span>LAB</span></a>
+    <a class="hex" href="/archive" data-key="ARCHIVE"><span>ARCHIVE</span></a>
+    <a class="hex" href="/store" data-key="STORE"><span>STORE</span></a>
+    <a class="hex" href="/company" data-key="COMPANY"><span>COMPANY</span></a>
+    <a class="hex" href="/contact" data-key="CONTACT"><span>CONTACT</span></a>
+  </nav>
 
-<script type="module">
-import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+  <script type="module">
+    import * as THREE from "three";
+    import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-/* ===== HOLO OVERLAY HELPER ===== */
-function addHoloOverlay(root, options = {}) {
-  const color = options.color ?? 0x00ffff;
-  const wireOpacity = options.wireOpacity ?? 0.22;
-  const edgeOpacity = options.edgeOpacity ?? 0.55;
+    function addHoloOverlay(root, options = {}) {
+      const color = options.color ?? 0x00ffff;
+      const wireOpacity = options.wireOpacity ?? 0.22;
+      const edgeOpacity = options.edgeOpacity ?? 0.55;
 
-  const meshes = [];
-  root.traverse((obj) => {
-    if (!obj.isMesh || !obj.geometry) return;
-    if (obj.userData.__isHoloPart) return;
-    meshes.push(obj);
-  });
+      const meshes = [];
+      root.traverse((obj) => {
+        if (!obj.isMesh || !obj.geometry) return;
+        if (obj.userData.__isHoloPart) return;
+        meshes.push(obj);
+      });
 
-  for (const obj of meshes) {
-    const wireMat = new THREE.MeshBasicMaterial({
-      color,
-      wireframe: true,
-      transparent: true,
-      opacity: wireOpacity,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      depthTest: true,
-      polygonOffset: true,
-      polygonOffsetFactor: -1,
-      polygonOffsetUnits: -1
-    });
+      for (const obj of meshes) {
+        const wireMat = new THREE.MeshBasicMaterial({
+          color,
+          wireframe: true,
+          transparent: true,
+          opacity: wireOpacity,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+          depthTest: true,
+          polygonOffset: true,
+          polygonOffsetFactor: -1,
+          polygonOffsetUnits: -1
+        });
 
-    const wire = new THREE.Mesh(obj.geometry, wireMat);
-    wire.userData.__isHoloPart = true;
-    wire.renderOrder = 2;
+        const wire = new THREE.Mesh(obj.geometry, wireMat);
+        wire.userData.__isHoloPart = true;
+        wire.renderOrder = 2;
 
-    const edgesGeo = new THREE.EdgesGeometry(obj.geometry, 28);
-    const edgesMat = new THREE.LineBasicMaterial({
-      color,
-      transparent: true,
-      opacity: edgeOpacity * (0.8 + Math.random()*0.2),
-      blending: THREE.AdditiveBlending,
-      depthWrite: false
-    });
+        const edgesGeo = new THREE.EdgesGeometry(obj.geometry, 28);
+        const edgesMat = new THREE.LineBasicMaterial({
+          color,
+          transparent: true,
+          opacity: edgeOpacity * (0.8 + Math.random() * 0.2),
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        });
 
-    const edges = new THREE.LineSegments(edgesGeo, edgesMat);
-    edges.userData.__isHoloPart = true;
-    edges.renderOrder = 3;
+        const edges = new THREE.LineSegments(edgesGeo, edgesMat);
+        edges.userData.__isHoloPart = true;
+        edges.renderOrder = 3;
 
-    obj.add(wire);
-    obj.add(edges);
-  }
-}
-
-// ===== Portal stub (prevent 404 for now) =====
-document.querySelectorAll("#portalUI .hex").forEach((a) => {
-  a.addEventListener("click", (e) => {
-    // if you don't have routes yet, keep it on-page
-    e.preventDefault();
-    const key = a.dataset.key || a.textContent.trim();
-    // minimal: set hash (so you can later use it to switch sections)
-    location.hash = key.toLowerCase();
-  });
-});
-/* ===== END HOLO OVERLAY HELPER ===== */
-
-
-/* =========================
-   Particle Background (2D)
-========================= */
-const pCanvas = document.getElementById("particlesCanvas");
-const pCtx = pCanvas.getContext("2d");
-
-let W = 0, H = 0, DPR = 1;
-
-// responsive params
-let N = 140;
-let linkDist = 150;
-let mouseRadius = 260;
-let glowRadius = 160;
-let pointRadius = 1.9;
-
-let particles = [];
-
-function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
-function lerp(a,b,t){ return a + (b-a)*t; }
-
-function recomputeParticleParams(){
-  const base = Math.min(W, H);
-
-  // density-based N (area scaled) + clamp for perf
-  // tweak density if you want: smaller denom => denser
-  const density = 1 / 5000; // ~1 particle per 5000 px
-  N = clamp(Math.round(W * H * density), 90, 240);
-
-  // link distance scales with short edge
-  linkDist = clamp(base * 0.18, 110, 220);
-
-  // mouse influence scales with short edge
-  mouseRadius = clamp(base * 0.32, 220, 420);
-
-  // glow radius scales too
-  glowRadius = clamp(base * 0.20, 140, 260);
-
-  // point radius mild scaling (don’t overdo)
-  pointRadius = clamp(base * 0.0022, 1.5, 2.3);
-}
-
-function rebuildParticles(keepMomentum=false){
-  const prev = particles;
-  particles = Array.from({length:N}, (_,i)=> {
-    const p = {
-      x: Math.random()*W,
-      y: Math.random()*H,
-      vx: (Math.random()*2-1)*0.25,
-      vy: (Math.random()*2-1)*0.25
-    };
-    if (keepMomentum && prev && prev[i]){
-      p.vx = prev[i].vx;
-      p.vy = prev[i].vy;
-    }
-    return p;
-  });
-}
-
-function resize2D(){
-  DPR = Math.min(2, window.devicePixelRatio || 1);
-  W = Math.floor(window.innerWidth);
-  H = Math.floor(window.innerHeight);
-
-  pCanvas.width = Math.floor(W * DPR);
-  pCanvas.height = Math.floor(H * DPR);
-  pCanvas.style.width = W + "px";
-  pCanvas.style.height = H + "px";
-  pCtx.setTransform(DPR,0,0,DPR,0,0);
-
-  recomputeParticleParams();
-  rebuildParticles(false);
-}
-resize2D();
-
-const mouse = { x: W/2, y: H/2, tx: W/2, ty: H/2, active:false };
-let lastMouseMove = performance.now();
-let mouseStrength = 0;
-
-window.addEventListener("mousemove",(e)=>{
-  mouse.tx = e.clientX; mouse.ty = e.clientY;
-  mouse.active = true;
-  lastMouseMove = performance.now();
-});
-window.addEventListener("mouseleave",()=>{ mouse.active = false; });
-
-function tickParticles(){
-  mouse.x = lerp(mouse.x, mouse.tx, 0.18);
-  mouse.y = lerp(mouse.y, mouse.ty, 0.18);
-
-  const now = performance.now();
-  const idle = Math.max(0, (now - lastMouseMove - 120) / 600);
-  const targetStrength = mouse.active ? (1 - Math.min(1, idle)) : 0;
-  mouseStrength = lerp(mouseStrength, targetStrength, 0.08);
-
-  pCtx.clearRect(0,0,W,H);
-  pCtx.fillStyle = "rgba(0,0,0,0.55)";
-  pCtx.fillRect(0,0,W,H);
-
-  // mouse glow (responsive)
-  if (mouse.active){
-    const g = pCtx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, glowRadius);
-    g.addColorStop(0, "rgba(0,255,255,0.18)");
-    g.addColorStop(0.35, "rgba(0,255,255,0.06)");
-    g.addColorStop(1, "rgba(0,255,255,0)");
-    pCtx.fillStyle = g;
-    const pad = glowRadius + 60;
-    pCtx.fillRect(mouse.x-pad, mouse.y-pad, pad*2, pad*2);
-  }
-
-  for (const p of particles){
-    // idle drift
-    p.vx += (Math.random()*2-1) * 0.05;
-    p.vy += (Math.random()*2-1) * 0.05;
-
-    const dx = mouse.x - p.x;
-    const dy = mouse.y - p.y;
-    const dist = Math.hypot(dx,dy);
-
-    if (mouse.active && dist < mouseRadius){
-      const falloff = 1 - dist/mouseRadius;
-
-      const pull = falloff * falloff * 0.040 * mouseStrength;
-      p.vx += dx * pull;
-      p.vy += dy * pull;
-
-      const release = falloff * falloff * 0.010 * (1 - mouseStrength);
-      if (dist > 1e-3){
-        p.vx += (-dx / dist) * release;
-        p.vy += (-dy / dist) * release;
+        obj.add(wire);
+        obj.add(edges);
       }
     }
 
-    p.x += p.vx;
-    p.y += p.vy;
+    document.querySelectorAll("#portalUI .hex").forEach((a) => {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        const key = a.dataset.key || a.textContent.trim();
+        location.hash = key.toLowerCase();
+      });
+    });
 
-    if (p.x < -20) p.x = W+20;
-    if (p.x > W+20) p.x = -20;
-    if (p.y < -20) p.y = H+20;
-    if (p.y > H+20) p.y = -20;
+    const pCanvas = document.getElementById("particlesCanvas");
+    const pCtx = pCanvas.getContext("2d");
 
-    p.vx *= 0.994;
-    p.vy *= 0.994;
+    let W = 0, H = 0, DPR = 1;
 
-    const sp = Math.hypot(p.vx,p.vy);
-    const maxSp = 1.8;
-    if (sp > maxSp){
-      p.vx *= maxSp/sp;
-      p.vy *= maxSp/sp;
+    let N = 140;
+    let linkDist = 150;
+    let mouseRadius = 260;
+    let glowRadius = 160;
+    let pointRadius = 1.9;
+
+    let particles = [];
+
+    function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+    function lerp(a, b, t){ return a + (b - a) * t; }
+
+    function recomputeParticleParams(){
+      const base = Math.min(W, H);
+
+      const density = 1 / 5000;
+      N = clamp(Math.round(W * H * density), 90, 240);
+
+      linkDist = clamp(base * 0.18, 110, 220);
+      mouseRadius = clamp(base * 0.32, 220, 420);
+      glowRadius = clamp(base * 0.20, 140, 260);
+      pointRadius = clamp(base * 0.0022, 1.5, 2.3);
     }
-  }
 
-  // links (responsive linkDist)
-  pCtx.lineWidth = 1;
-  for (let i=0;i<N;i++){
-    for (let j=i+1;j<N;j++){
-      const a = particles[i], b = particles[j];
-      const dx = a.x-b.x, dy=a.y-b.y;
-      const d = Math.hypot(dx,dy);
-      if (d < linkDist){
-        const alpha = (1 - d/linkDist) * 0.45;
-        pCtx.strokeStyle = `rgba(0,255,255,${alpha})`;
+    function rebuildParticles(keepMomentum = false){
+      const prev = particles;
+      particles = Array.from({ length: N }, (_, i) => {
+        const p = {
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() * 2 - 1) * 0.25,
+          vy: (Math.random() * 2 - 1) * 0.25
+        };
+        if (keepMomentum && prev && prev[i]){
+          p.vx = prev[i].vx;
+          p.vy = prev[i].vy;
+        }
+        return p;
+      });
+    }
+
+    const HEX_NORM = [
+      [0.25, 0.06],
+      [0.75, 0.06],
+      [0.97, 0.50],
+      [0.75, 0.94],
+      [0.25, 0.94],
+      [0.03, 0.50],
+    ];
+
+    let hexObstacles = [];
+
+    function buildHexObstacles(){
+      const els = Array.from(document.querySelectorAll("#portalUI .hex"));
+      hexObstacles = els.map(el => {
+        const r = el.getBoundingClientRect();
+        const pts = HEX_NORM.map(([u, v]) => ({
+          x: r.left + u * r.width,
+          y: r.top  + v * r.height
+        }));
+        const cx = r.left + r.width * 0.5;
+        const cy = r.top  + r.height * 0.5;
+        return { pts, cx, cy };
+      });
+    }
+
+    function pointInPoly(x, y, pts){
+      let inside = false;
+      for (let i = 0, j = pts.length - 1; i < pts.length; j = i++){
+        const xi = pts[i].x, yi = pts[i].y;
+        const xj = pts[j].x, yj = pts[j].y;
+        const intersect = ((yi > y) !== (yj > y)) &&
+          (x < (xj - xi) * (y - yi) / (yj - yi + 1e-9) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    function closestPointOnSeg(px, py, ax, ay, bx, by){
+      const abx = bx - ax, aby = by - ay;
+      const apx = px - ax, apy = py - ay;
+      const denom = abx * abx + aby * aby + 1e-9;
+      let t = (apx * abx + apy * aby) / denom;
+      t = Math.max(0, Math.min(1, t));
+      return { x: ax + abx * t, y: ay + aby * t };
+    }
+
+    function resolvePolyCollision(p, poly, margin = 10, strength = 0.65){
+      const pts = poly.pts;
+
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const q of pts){
+        if (q.x < minX) minX = q.x;
+        if (q.y < minY) minY = q.y;
+        if (q.x > maxX) maxX = q.x;
+        if (q.y > maxY) maxY = q.y;
+      }
+      if (p.x < minX - margin || p.x > maxX + margin || p.y < minY - margin || p.y > maxY + margin) return;
+
+      const inside = pointInPoly(p.x, p.y, pts);
+
+      let bestD2 = Infinity;
+      let bestCX = 0, bestCY = 0, bestNX = 0, bestNY = 0;
+
+      for (let i = 0; i < pts.length; i++){
+        const a = pts[i], b = pts[(i + 1) % pts.length];
+        const cp = closestPointOnSeg(p.x, p.y, a.x, a.y, b.x, b.y);
+        const dx = p.x - cp.x;
+        const dy = p.y - cp.y;
+        const d2 = dx * dx + dy * dy;
+
+        if (d2 < bestD2){
+          let nx = cp.x - poly.cx;
+          let ny = cp.y - poly.cy;
+          const nlen = Math.hypot(nx, ny) + 1e-9;
+          nx /= nlen; ny /= nlen;
+
+          bestD2 = d2;
+          bestCX = cp.x; bestCY = cp.y;
+          bestNX = nx; bestNY = ny;
+        }
+      }
+
+      const d = Math.sqrt(bestD2);
+
+      if (inside || d < margin){
+        const push = (inside ? (margin + 1) : (margin - d + 1)) * strength;
+
+        p.x += bestNX * push;
+        p.y += bestNY * push;
+
+        const vn = p.vx * bestNX + p.vy * bestNY;
+        if (vn < 0){
+          p.vx -= vn * bestNX * 1.05;
+          p.vy -= vn * bestNY * 1.05;
+        }
+        p.vx += bestNX * 0.08;
+        p.vy += bestNY * 0.08;
+      }
+    }
+
+    function resize2D(){
+      DPR = Math.min(2, window.devicePixelRatio || 1);
+      W = Math.floor(window.innerWidth);
+      H = Math.floor(window.innerHeight);
+
+      pCanvas.width = Math.floor(W * DPR);
+      pCanvas.height = Math.floor(H * DPR);
+      pCanvas.style.width = W + "px";
+      pCanvas.style.height = H + "px";
+      pCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+      recomputeParticleParams();
+      rebuildParticles(false);
+
+      requestAnimationFrame(buildHexObstacles);
+    }
+
+    resize2D();
+    buildHexObstacles();
+
+    const mouse = { x: W/2, y: H/2, tx: W/2, ty: H/2, active: false };
+    let lastMouseMove = performance.now();
+    let mouseStrength = 0;
+
+    window.addEventListener("mousemove", (e) => {
+      mouse.tx = e.clientX;
+      mouse.ty = e.clientY;
+      mouse.active = true;
+      lastMouseMove = performance.now();
+    });
+
+    window.addEventListener("mouseleave", () => { mouse.active = false; });
+
+    function tickParticles(){
+      mouse.x = lerp(mouse.x, mouse.tx, 0.18);
+      mouse.y = lerp(mouse.y, mouse.ty, 0.18);
+
+      const now = performance.now();
+      const idle = Math.max(0, (now - lastMouseMove - 120) / 600);
+      const targetStrength = mouse.active ? (1 - Math.min(1, idle)) : 0;
+      mouseStrength = lerp(mouseStrength, targetStrength, 0.08);
+
+      pCtx.clearRect(0, 0, W, H);
+      pCtx.fillStyle = "rgba(0,0,0,0.55)";
+      pCtx.fillRect(0, 0, W, H);
+
+      if (mouse.active){
+        const g = pCtx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, glowRadius);
+        g.addColorStop(0, "rgba(0,255,255,0.18)");
+        g.addColorStop(0.35, "rgba(0,255,255,0.06)");
+        g.addColorStop(1, "rgba(0,255,255,0)");
+        pCtx.fillStyle = g;
+        const pad = glowRadius + 60;
+        pCtx.fillRect(mouse.x - pad, mouse.y - pad, pad * 2, pad * 2);
+      }
+
+      for (const p of particles){
+        p.vx += (Math.random() * 2 - 1) * 0.05;
+        p.vy += (Math.random() * 2 - 1) * 0.05;
+
+        const dx = mouse.x - p.x;
+        const dy = mouse.y - p.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (mouse.active && dist < mouseRadius){
+          const falloff = 1 - dist / mouseRadius;
+
+          const pull = falloff * falloff * 0.040 * mouseStrength;
+          p.vx += dx * pull;
+          p.vy += dy * pull;
+
+          const release = falloff * falloff * 0.010 * (1 - mouseStrength);
+          if (dist > 1e-3){
+            p.vx += (-dx / dist) * release;
+            p.vy += (-dy / dist) * release;
+          }
+        }
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        for (const poly of hexObstacles){
+          resolvePolyCollision(p, poly, 10, 0.65);
+        }
+
+        if (p.x < -20) p.x = W + 20;
+        if (p.x > W + 20) p.x = -20;
+        if (p.y < -20) p.y = H + 20;
+        if (p.y > H + 20) p.y = -20;
+
+        p.vx *= 0.994;
+        p.vy *= 0.994;
+
+        const sp = Math.hypot(p.vx, p.vy);
+        const maxSp = 1.8;
+        if (sp > maxSp){
+          p.vx *= maxSp / sp;
+          p.vy *= maxSp / sp;
+        }
+      }
+
+      pCtx.lineWidth = 1;
+      for (let i = 0; i < N; i++){
+        for (let j = i + 1; j < N; j++){
+          const a = particles[i], b = particles[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const d = Math.hypot(dx, dy);
+          if (d < linkDist){
+            const alpha = (1 - d / linkDist) * 0.45;
+            pCtx.strokeStyle = `rgba(0,255,255,${alpha})`;
+            pCtx.beginPath();
+            pCtx.moveTo(a.x, a.y);
+            pCtx.lineTo(b.x, b.y);
+            pCtx.stroke();
+          }
+        }
+      }
+
+      for (const p of particles){
+        pCtx.fillStyle = "rgba(0,255,255,0.9)";
         pCtx.beginPath();
-        pCtx.moveTo(a.x,a.y);
-        pCtx.lineTo(b.x,b.y);
-        pCtx.stroke();
+        pCtx.arc(p.x, p.y, pointRadius, 0, Math.PI * 2);
+        pCtx.fill();
       }
+
+      requestAnimationFrame(tickParticles);
     }
-  }
 
-  // points (responsive radius)
-  for (const p of particles){
-    pCtx.fillStyle = "rgba(0,255,255,0.9)";
-    pCtx.beginPath();
-    pCtx.arc(p.x,p.y,pointRadius,0,Math.PI*2);
-    pCtx.fill();
-  }
+    tickParticles();
 
-  requestAnimationFrame(tickParticles);
-}
-tickParticles();
+    const scene = new THREE.Scene();
 
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0, 2.4);
 
-/* =========================
-   Three.js Layer (3D)
-========================= */
-const scene = new THREE.Scene();
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    renderer.domElement.className = "threeCanvas";
+    document.body.appendChild(renderer.domElement);
 
-const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 100);
-camera.position.set(0, 0, 2.4);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+    const key = new THREE.DirectionalLight(0xffffff, 1.2);
+    key.position.set(2, 2, 4);
+    scene.add(key);
 
-const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-renderer.domElement.className = "threeCanvas";
-document.body.appendChild(renderer.domElement);
+    let head = null;
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-const key = new THREE.DirectionalLight(0xffffff, 1.2);
-key.position.set(2,2,4);
-scene.add(key);
+    const loader = new GLTFLoader();
+    loader.load("/head.glb", (gltf) => {
+      head = gltf.scene;
 
-let head = null;
+      head.position.set(0, 0, 0);
+      head.scale.set(2.6, 2.6, 2.6);
 
-const loader = new GLTFLoader();
-loader.load("/head.glb", (gltf)=>{
-  head = gltf.scene;
+      head.traverse((o) => {
+        if (!o.isMesh) return;
+        if (o.material){
+          o.material = o.material.clone();
+          o.material.transparent = true;
+          o.material.opacity = 0;
+          o.material.depthWrite = false;
+        }
+      });
 
-  head.position.set(0, 0, 0);
-  head.scale.set(2.6, 2.6, 2.6);
+      addHoloOverlay(head, {
+        color: 0x00ffff,
+        wireOpacity: 0.18,
+        edgeOpacity: 0.55
+      });
 
-  head.traverse((o)=>{
-    if (!o.isMesh) return;
-    if (o.material){
-      o.material = o.material.clone();
-      o.material.transparent = true;
-      o.material.opacity = 0;
-      o.material.depthWrite = false;
+      scene.add(head);
+      console.log("GLB LOADED + HOLO");
+    }, undefined, (err) => {
+      console.error("GLB load error", err);
+    });
+
+    const m3 = { x: 0, y: 0 };
+    window.addEventListener("mousemove", (e) => {
+      m3.x = (e.clientX / window.innerWidth) * 2 - 1;
+      m3.y = (e.clientY / window.innerHeight) * 2 - 1;
+    });
+
+    window.addEventListener("resize", () => {
+      resize2D();
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      requestAnimationFrame(buildHexObstacles);
+    });
+
+    let t = 0;
+    function animate(){
+      requestAnimationFrame(animate);
+      t += 0.016;
+
+      if (head){
+        head.position.y =
+          Math.sin(t * 0.9) * 0.07 +
+          Math.sin(t * 0.35) * 0.02;
+
+        const targetY = m3.x * 0.45;
+        const targetX = m3.y * 0.25;
+        head.rotation.y = lerp(head.rotation.y, targetY, 0.08);
+        head.rotation.x = lerp(head.rotation.x, targetX, 0.08);
+      }
+
+      renderer.render(scene, camera);
     }
-  });
-
-  addHoloOverlay(head, {
-    color: 0x00ffff,
-    wireOpacity: 0.18,
-    edgeOpacity: 0.55
-  });
-
-  scene.add(head);
-  console.log("GLB LOADED + HOLO");
-}, undefined, (err)=>{
-  console.error("GLB load error", err);
-});
-
-const m3 = { x:0, y:0 };
-window.addEventListener("mousemove",(e)=>{
-  m3.x = (e.clientX / window.innerWidth) * 2 - 1;
-  m3.y = (e.clientY / window.innerHeight) * 2 - 1;
-});
-
-window.addEventListener("resize", ()=>{
-  resize2D();
-
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-let t = 0;
-function animate(){
-  requestAnimationFrame(animate);
-  t += 0.016;
-
-  if (head){
-    head.position.y =
-      Math.sin(t*0.9)*0.07 +
-      Math.sin(t*0.35)*0.02;
-
-    const targetY = m3.x * 0.45;
-    const targetX = m3.y * 0.25;
-    head.rotation.y = lerp(head.rotation.y, targetY, 0.08);
-    head.rotation.x = lerp(head.rotation.x, targetX, 0.08);
-  }
-
-  renderer.render(scene, camera);
-}
-animate();
-</script>
+    animate();
+  </script>
 </body>
 </html>
