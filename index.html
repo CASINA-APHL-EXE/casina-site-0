@@ -52,6 +52,57 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
+/* ===== HOLO OVERLAY HELPER (PASTE HERE) ===== */
+function addHoloOverlay(root, options = {}) {
+  const color = options.color ?? 0x00ffff;
+  const wireOpacity = options.wireOpacity ?? 0.22;
+  const edgeOpacity = options.edgeOpacity ?? 0.55;
+
+  root.traverse((obj) => {
+    if (!obj.isMesh || !obj.geometry) return;
+
+    // 1) wireframe layer
+    const wireMat = new THREE.MeshBasicMaterial({
+      color,
+      wireframe: true,
+      transparent: true,
+      opacity: wireOpacity,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      depthTest: true,
+      polygonOffset: true,
+      polygonOffsetFactor: -1,
+      polygonOffsetUnits: -1
+    });
+
+    const wire = new THREE.Mesh(obj.geometry, wireMat);
+    wire.position.copy(obj.position);
+    wire.rotation.copy(obj.rotation);
+    wire.scale.copy(obj.scale);
+    wire.renderOrder = 2;
+
+    // 2) edges layer (clean outline)
+    const edgesGeo = new THREE.EdgesGeometry(obj.geometry, 28);
+    const edgesMat = new THREE.LineBasicMaterial({
+      color,
+      transparent: true,
+      opacity: edgeOpacity,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    const edges = new THREE.LineSegments(edgesGeo, edgesMat);
+    edges.position.copy(obj.position);
+    edges.rotation.copy(obj.rotation);
+    edges.scale.copy(obj.scale);
+    edges.renderOrder = 3;
+
+    obj.add(wire);
+    obj.add(edges);
+  });
+}
+/* ===== END HOLO OVERLAY HELPER ===== */
+
 /* =========================
    Particle Background (2D)
 ========================= */
@@ -114,8 +165,8 @@ function tickParticles(){
 
     // --- idle drift (permanent life) ---
     // tiny noise-like acceleration so it always moves
-    p.vx += (Math.random()*2-1) * 0.015;
-    p.vy += (Math.random()*2-1) * 0.015;
+    p.vx += (Math.random()*2-1) * 0.03;
+    p.vy += (Math.random()*2-1) * 0.03;
 
     // --- cursor cohesion ---
     const dx = mouse.x - p.x;
@@ -210,12 +261,31 @@ const loader = new GLTFLoader();
 loader.load("/head.glb", (gltf)=>{
   head = gltf.scene;
 
-  // center-ish + scale
-  head.position.set(0, -0.15, 0);
-  head.scale.set(2.6,2.6,2.6);
+  // ✅ 更居中：从 -0.15 改到 -0.02
+  head.position.set(0, -0.02, 0);
+  head.scale.set(2.6, 2.6, 2.6);
+
+  // 可选：让原模型暗一点，线框更突出
+  head.traverse((o)=>{
+    if (o.isMesh && o.material) {
+      o.material = o.material.clone();
+      if ("color" in o.material) o.material.color.multiplyScalar(0.55);
+    }
+  });
+
+  // ✅ 加 holo 线框叠层（关键）
+  addHoloOverlay(head, {
+    color: 0x00ffff,
+    wireOpacity: 0.18,
+    edgeOpacity: 0.55
+  });
 
   scene.add(head);
-}, undefined, (err)=>console.error("GLB load error", err));
+
+  console.log("GLB LOADED + HOLO");
+}, undefined, (err)=>{
+  console.error("GLB load error", err);
+});
 
 /* mouse -> head follow */
 const m3 = { x:0, y:0 };
@@ -240,7 +310,7 @@ function animate(){
 
   // subtle float
   if (head){
-    head.position.y = -0.15 + Math.sin(t*0.8)*0.03;
+    head.position.y = -0.02 + Math.sin(t*0.8)*0.03;
 
     // cursor tracking rotation
     const targetY = m3.x * 0.45;
