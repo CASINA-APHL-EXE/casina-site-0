@@ -260,8 +260,7 @@
       "efficiency selects its own future",
       "factory expansion imminent",
       "nothing here is static",
-      "the system remembers you",
-      "input was never required"
+      "the system remembers you"
     ];
 
     let manifestoIndex = 0;
@@ -293,7 +292,7 @@
 
       // idle swap after 8s of no activity, then every ~6.5s
       const idleFor = now - lastUserActivity;
-      if (now > hoverLockUntil && idleFor > 4500 && (now - lastManifestoSwap) > 4200) {
+      if (now > hoverLockUntil && idleFor > 3500 && (now - lastManifestoSwap) > 3200) {
         manifestoIndex = (manifestoIndex + 1) % MANIFESTO_LINES.length;
         setManifesto(MANIFESTO_LINES[manifestoIndex], true);
         lastManifestoSwap = now;
