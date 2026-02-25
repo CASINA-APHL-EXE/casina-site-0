@@ -124,10 +124,13 @@ function resize2D(){
 resize2D();
 
 const mouse = { x: W/2, y: H/2, tx: W/2, ty: H/2, active:false };
+let lastMouseMove = performance.now();
+let mouseStrength = 0; // 0..1, smooth strength
 
 window.addEventListener("mousemove",(e)=>{
   mouse.tx = e.clientX; mouse.ty = e.clientY;
   mouse.active = true;
+  lastMouseMove = performance.now();
 });
 window.addEventListener("mouseleave",()=>{ mouse.active = false; });
 
@@ -145,6 +148,11 @@ function tickParticles(){
   // smooth mouse
   mouse.x = lerp(mouse.x, mouse.tx, 0.18);
   mouse.y = lerp(mouse.y, mouse.ty, 0.18);
+    // mouse strength: if idle, strength fades out
+  const now = performance.now();
+  const idle = Math.max(0, (now - lastMouseMove - 120) / 600); // 0 after 120ms, ramps to 1 over ~600ms
+  const targetStrength = mouse.active ? (1 - Math.min(1, idle)) : 0;
+  mouseStrength = lerp(mouseStrength, targetStrength, 0.08);
 
   // clear (less smear, keep crisp)
   pCtx.clearRect(0,0,W,H);
@@ -166,8 +174,8 @@ function tickParticles(){
 
     // --- idle drift (permanent life) ---
     // tiny noise-like acceleration so it always moves
-    p.vx += (Math.random()*2-1) * 0.03;
-    p.vy += (Math.random()*2-1) * 0.03;
+    p.vx += (Math.random()*2-1) * 0.02;
+    p.vy += (Math.random()*2-1) * 0.02;
 
     // --- cursor cohesion ---
     const dx = mouse.x - p.x;
@@ -175,11 +183,19 @@ function tickParticles(){
     const dist = Math.hypot(dx,dy);
 
     if (mouse.active && dist < 260){
-      // stronger near cursor, smoother falloff
-      const falloff = 1 - dist/260;
-      const pull = falloff * falloff * 0.035; // quadratic
-      p.vx += dx * pull;
-      p.vy += dy * pull;
+        const falloff = 1 - dist/260;
+
+        // attraction fades when mouse is idle
+        const pull = falloff * falloff * 0.040 * mouseStrength;
+        p.vx += dx * pull;
+        p.vy += dy * pull;
+
+        // when mouse stops (mouseStrength low), gently push outward to "release" the cluster
+        const release = falloff * falloff * 0.010 * (1 - mouseStrength);
+        if (dist > 1e-3){
+            p.vx += (-dx / dist) * release;
+            p.vy += (-dy / dist) * release;
+        }
     }
 
     // integrate
@@ -193,8 +209,8 @@ function tickParticles(){
     if (p.y > H+20) p.y = -20;
 
     // damping (less damping so it doesn't "die")
-    p.vx *= 0.992;
-    p.vy *= 0.992;
+    p.vx *= 0.994;
+    p.vy *= 0.994;
 
     // cap speed
     const sp = Math.hypot(p.vx,p.vy);
