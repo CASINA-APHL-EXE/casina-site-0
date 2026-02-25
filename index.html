@@ -25,7 +25,7 @@
     position:fixed;
     top:20px; left:20px;
     color:cyan; opacity:.7;
-    letter-spacing:2px;
+    letter-spacing:clamp(2px, 0.35vw, 5px);
     z-index:2;
     user-select:none;
     pointer-events:none;
@@ -43,20 +43,16 @@
 #portalUI .hex{
   pointer-events: auto;
   position: fixed;
-  width: 140px;
+  width: clamp(120px, 10vw, 190px);
   aspect-ratio: 1 / 1;
   display: grid;
   place-items: center;
   color: rgba(0,255,255,0.75);
   text-decoration: none;
-  letter-spacing: 3px;
-  font-size: 14px;
+  letter-spacing: clamp(2px, 0.35vw, 5px);
+  font-size: clamp(14px, 1.25vw, 22px);
   clip-path: polygon(25% 6%,75% 6%,97% 50%,75% 94%,25% 94%,3% 50%);
-  background: radial-gradient(circle at 30% 30%,
-    rgba(0,255,255,0.10),
-    rgba(0,255,255,0.02) 55%,
-    rgba(0,0,0,0) 72%
-  );
+  background: rgba(0,255,255,0.06);
   border: 1px solid rgba(0,255,255,0.22);
   opacity: .70;
   transform: translate(-50%,-50%) scale(1);
