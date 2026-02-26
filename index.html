@@ -721,8 +721,8 @@
     // ===== Eye behavior (advanced) =====
     const eyeState = {
       // how much the eyes "look" toward cursor (in radians)
-      maxYaw: 0.22,
-      maxPitch: 0.16,
+      maxYaw: 0.10,
+      maxPitch: 0.10,
 
       // lag: smaller = more sluggish / "conscious"
       follow: 0.065,
@@ -735,7 +735,7 @@
       _sy: 0,
 
       // scan/flicker vibe
-      flickerChance: 0.003, // per frame-ish
+      flickerChance: 0.001, // per frame-ish
       _flickerT: 0
     };
 
