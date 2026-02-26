@@ -789,19 +789,16 @@
           eyeL.position.y = lerp(eyeL.position.y, yOff, 0.08);
           eyeR.position.y = lerp(eyeR.position.y, yOff, 0.08);
           const pulse = 0.65 + 0.35 * Math.sin(t * 1.35);
-
           // chance to start a blackout (rare event)
           if (Math.random() < 0.002) {
-  eyeState._blackoutUntil = performance.now() + 600 + Math.random() * 900; 
-  // ↑ 灭 0.6s ~ 1.5s（想更久就把这里加大）
-}
+          eyeState._blackoutUntil = performance.now() + 600 + Math.random() * 900; 
+          }
 
           const blackout = performance.now() < eyeState._blackoutUntil;
           const base = blackout ? 0.0 : 0.75;
 
-          const op = base * pulse;  
+          const op = base * pulse;
 
-          const globalAlpha = 0.8;
 
           eyeL.material.opacity = op * globalAlpha;
           eyeR.material.opacity = op * globalAlpha;
