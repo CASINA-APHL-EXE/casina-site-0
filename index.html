@@ -710,7 +710,9 @@
       eyeR.position.set( eyeSep * 0.5, 0, 0);
 
       eyeRig.add(eyeL);
-      eyeRig.add(eyeR);scene.add(head);
+      eyeRig.add(eyeR);
+
+      scene.add(head);
       console.log("GLB LOADED + HOLO");
     }, undefined, (err) => {
       console.error("GLB load error", err);
@@ -720,26 +722,42 @@
 
     // ===== Eye behavior =====
     const eyeState = {
-
-      _blackoutUntil: 0,
-      
       maxYaw: 0.10,
       maxPitch: 0.10,
-
-      
       follow: 0.065,
 
-      
-      saccadeAmp: 0.008,
-      saccadeEvery: 420,
-      _nextSaccade: 0,
-      _sx: 0,
-      _sy: 0,
+      // overall eye visibility (0..1)
+      globalAlpha: 0.50,
 
-      // scan/flicker vibe
+      // slow breathing while ON
+      pulseBase: 0.70,
+      pulseAmp: 0.30,
+      pulseSpeed: 0.85,
+
+      // ON/OFF cycle (seconds): long OFF, short ON
+      onDuration: 0.55,
+      offDuration: 3.20,
+      fade: 0.12
     };
 
-    function randBetween(a, b){ return a + Math.random() * (b - a); }
+    function smoothstep(edge0, edge1, x){
+      const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0 + 1e-9)));
+      return t * t * (3 - 2 * t);
+    }
+
+    function cycleIntensity(nowSec){
+      const cycle = eyeState.onDuration + eyeState.offDuration;
+      const p = nowSec % cycle;
+
+      // OFF segment
+      if (p >= eyeState.onDuration) return 0;
+
+      // ON segment with soft fade in/out
+      const a = smoothstep(0, eyeState.fade, p);
+      const b = smoothstep(0, eyeState.fade, eyeState.onDuration - p);
+      return a * b;
+    }
+(a, b){ return a + Math.random() * (b - a); }
 
     window.addEventListener("mousemove", (e) => {
       m3.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -770,41 +788,24 @@
         head.rotation.x = lerp(head.rotation.x, targetX, 0.08);
         
         if (eyeRig && eyeL && eyeR){
-          const now = performance.now();
+          const nowSec = performance.now() / 1000;
 
-          if (now > eyeState._nextSaccade){
-            eyeState._nextSaccade = now + eyeState.saccadeEvery + Math.random() * 260;
-            eyeState._sx = randBetween(-1, 1);
-            eyeState._sy = randBetween(-1, 1);
-          }
-
-          const targetYaw = (m3.x * eyeState.maxYaw) + eyeState._sx * eyeState.saccadeAmp;
-          const targetPitch = (-m3.y * eyeState.maxPitch) + eyeState._sy * eyeState.saccadeAmp;
+          const targetYaw = (m3.x * eyeState.maxYaw);
+          const targetPitch = (-m3.y * eyeState.maxPitch);
 
           eyeRig.rotation.y = lerp(eyeRig.rotation.y, targetYaw, eyeState.follow);
           eyeRig.rotation.x = lerp(eyeRig.rotation.x, targetPitch, eyeState.follow);
 
-          
-          const yOff = eyeState._sy * 0.0035;
-          eyeL.position.y = lerp(eyeL.position.y, yOff, 0.08);
-          eyeR.position.y = lerp(eyeR.position.y, yOff, 0.08);
-          const pulse = 0.65 + 0.35 * Math.sin(t * 1.35);
-          // chance to start a blackout (rare event)
-          if (Math.random() < 0.002) {
-          eyeState._blackoutUntil = performance.now() + 600 + Math.random() * 900; 
-          }
+          const on = cycleIntensity(nowSec);
+          const pulse = eyeState.pulseBase + eyeState.pulseAmp * Math.sin(t * eyeState.pulseSpeed);
+          const op = on * pulse;
 
-          const blackout = performance.now() < eyeState._blackoutUntil;
-          const base = blackout ? 0.0 : 0.75;
+          eyeL.material.opacity = op * eyeState.globalAlpha;
+          eyeR.material.opacity = op * eyeState.globalAlpha;
 
-          const op = base * pulse;
-
-
-          eyeL.material.opacity = op * globalAlpha;
-          eyeR.material.opacity = op * globalAlpha;
           eyeL.scale.set(0.05, 0.05, 0.05);
           eyeR.scale.set(0.05, 0.05, 0.05);
-}
+        }
 
       }
 
