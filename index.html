@@ -216,6 +216,13 @@
   <div id="manifesto">the process has already begun</div>
 
   <script type="module">
+    
+    // Fix back/forward cache transition issue
+    window.addEventListener("pageshow", (event) => {
+    document.documentElement.classList.remove("is-transitioning");
+    document.body.classList.remove("is-entering");
+    });
+
     import * as THREE from "three";
     import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
