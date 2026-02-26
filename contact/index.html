@@ -1,126 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>CONTACT — CASINA</title>
-  <style>
-    :root{--c:rgba(0,255,255,.85);}
-    html,body{margin:0;height:100%;background:#000;font-family:monospace;overflow:auto;}
-    body{opacity:1;transition:opacity .6s ease, filter .6s ease;}
-    body.is-entering{opacity:0;filter:blur(2px);}
-    html.is-transitioning body{opacity:0;filter:blur(2px);}
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CONTACT — CASINA</title>
 
-    .wrap{min-height:100%;padding:18px 18px 60px;}
-    .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:sticky;top:0;padding:10px 0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:2;}
-    .hud{color:var(--c);opacity:.78;letter-spacing:3px;user-select:none;}
-    .hud .sub{opacity:.55;letter-spacing:2px;font-size:12px;margin-top:6px}
-    .btn{color:var(--c);text-decoration:none;border:1px solid rgba(0,255,255,.25);background:rgba(0,255,255,.06);
-      padding:10px 12px;border-radius:14px;letter-spacing:2px;font-size:12px;opacity:.85;white-space:nowrap;}
-    .btn:hover{opacity:1}
+<style>
+:root{
+  --c: rgba(0,255,255,.85);
+  --bg: #000;
 
-    .card{
-      width:min(820px,92vw);margin:18px auto 0;
-      border-radius:22px;
-      border:1px solid rgba(0,255,255,.18);
-      background:
-        radial-gradient(780px 340px at 40% 20%, rgba(0,255,255,.10), transparent 60%),
-        rgba(0,255,255,.04);
-      padding:18px;
-      color:var(--c);
-      box-shadow:0 0 60px rgba(0,255,255,.10);
-    }
-    label{display:block;margin-top:12px;opacity:.75;letter-spacing:2px;font-size:12px}
-    input,textarea{
-      width:100%;
-      margin-top:8px;
-      background:rgba(0,0,0,.35);
-      border:1px solid rgba(0,255,255,.18);
-      border-radius:16px;
-      color:var(--c);
-      padding:12px 12px;
-      font-family:monospace;
-      outline:none;
-    }
-    textarea{min-height:140px;resize:vertical}
-    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-    .send{
-      cursor:pointer;
-      border:1px solid rgba(0,255,255,.25);
-      background:rgba(0,255,255,.06);
-      color:var(--c);
-      padding:10px 12px;border-radius:14px;
-      letter-spacing:2px;font-family:monospace;
-      opacity:.85;
-    }
-    .send:hover{opacity:1}
-    .links{margin-top:16px;opacity:.55;letter-spacing:2px;font-size:12px;line-height:1.6}
-    .links a{color:var(--c);opacity:.85;text-decoration:none;border-bottom:1px dashed rgba(0,255,255,.25)}
-    .links a:hover{opacity:1}
-  </style>
+  --fs-1: clamp(12px,1.1vw,16px);
+  --fs-2: clamp(16px,1.6vw,24px);
+  --ls-1: clamp(1px,.25vw,4px);
+
+  --pad: clamp(14px,2vw,24px);
+  --radius: 20px;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--c);font-family:monospace}
+body{min-height:100svh;min-height:100dvh;opacity:1;transition:opacity .6s ease,filter .6s ease}
+body.is-entering{opacity:0;filter:blur(2px)}
+html.is-transitioning body{opacity:0;filter:blur(2px)}
+
+.safe{
+  padding:
+    calc(var(--pad) + env(safe-area-inset-top))
+    calc(var(--pad) + env(safe-area-inset-right))
+    calc(var(--pad) + env(safe-area-inset-bottom))
+    calc(var(--pad) + env(safe-area-inset-left));
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.title{
+  font-size:var(--fs-2);
+  letter-spacing:var(--ls-1);
+  opacity:.85;
+}
+
+.btn{
+  text-decoration:none;
+  color:var(--c);
+  border:1px solid rgba(0,255,255,.25);
+  padding:10px 14px;
+  border-radius:14px;
+  font-size:var(--fs-1);
+  letter-spacing:var(--ls-1);
+  opacity:.8;
+  white-space:nowrap;
+}
+.btn:hover{opacity:1}
+
+.card{
+  margin-top:28px;
+  border-radius:var(--radius);
+  border:1px solid rgba(0,255,255,.2);
+  background:rgba(0,255,255,.05);
+  padding:18px;
+  opacity:.9;
+  max-width: 900px;
+}
+
+.k{font-size:var(--fs-1);letter-spacing:var(--ls-1);opacity:.55;margin-top:14px}
+input,textarea{
+  width:100%;
+  margin-top:8px;
+  background:rgba(0,0,0,.35);
+  border:1px solid rgba(0,255,255,.18);
+  border-radius:14px;
+  color:var(--c);
+  padding:12px 12px;
+  font-family:monospace;
+  font-size:var(--fs-1);
+  outline:none;
+}
+textarea{min-height:140px;resize:vertical}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn2{
+  cursor:pointer;
+  border:1px solid rgba(0,255,255,.25);
+  background:rgba(0,255,255,.06);
+  color:var(--c);
+  padding:10px 14px;
+  border-radius:14px;
+  font-size:var(--fs-1);
+  letter-spacing:var(--ls-1);
+  opacity:.85;
+}
+.btn2:hover{opacity:1}
+
+.note{margin-top:16px;opacity:.45;letter-spacing:var(--ls-1);font-size:var(--fs-1);line-height:1.6}
+a.link{color:var(--c);text-decoration:none;border-bottom:1px dashed rgba(0,255,255,.25);opacity:.8}
+a.link:hover{opacity:1}
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div class="hud">
-        CONTACT // UPLINK
-        <div class="sub">messages routed to external channels</div>
-      </div>
-      <a class="btn" href="/">← HOME</a>
+<div class="safe">
+
+  <div class="topbar">
+    <div class="title">CONTACT</div>
+    <a class="btn" href="/">HOME</a>
+  </div>
+
+  <div class="card">
+    <div class="k">SUBJECT</div>
+    <input id="subj" placeholder="routing reason…" />
+
+    <div class="k">MESSAGE</div>
+    <textarea id="msg" placeholder="write something real…"></textarea>
+
+    <div class="row">
+      <button class="btn2" id="send">TRANSMIT</button>
+      <button class="btn2" id="clear">CLEAR</button>
     </div>
 
-    <div class="card">
-      <div style="letter-spacing:3px;opacity:.9">SEND SIGNAL</div>
-      <div style="opacity:.55;letter-spacing:2px;font-size:12px;margin-top:10px;line-height:1.6">
-        This form uses <b>mailto</b> as a placeholder.<br/>
-        Later: replace with Formspree / serverless endpoint if you want.
-      </div>
-
-      <label>SUBJECT</label>
-      <input id="subj" placeholder="routing reason…" />
-
-      <label>MESSAGE</label>
-      <textarea id="msg" placeholder="write something real…"></textarea>
-
-      <div class="row">
-        <button class="send" id="send">TRANSMIT</button>
-        <button class="send" id="clear">CLEAR</button>
-      </div>
-
-      <div class="links">
-        Quick links (replace later):<br/>
-        — <a href="#" onclick="return false;">Instagram</a><br/>
-        — <a href="#" onclick="return false;">YouTube</a><br/>
-        — <a href="#" onclick="return false;">SoundCloud</a><br/>
-        — <a href="#" onclick="return false;">GitHub</a>
+    <div class="note">
+      Placeholder uses <b>mailto</b>.<br>
+      Later swap to Formspree / serverless endpoint if needed.<br><br>
+      Links (replace later):
+      <div style="margin-top:10px;line-height:1.8">
+        — <a class="link" href="#" onclick="return false;">Instagram</a><br>
+        — <a class="link" href="#" onclick="return false;">YouTube</a><br>
+        — <a class="link" href="#" onclick="return false;">SoundCloud</a><br>
+        — <a class="link" href="#" onclick="return false;">GitHub</a>
       </div>
     </div>
   </div>
 
-  <script>
-    document.body.classList.add("is-entering");
-    requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.remove("is-entering")));
-    window.addEventListener("pageshow", () => {
-      document.documentElement.classList.remove("is-transitioning");
-      document.body.classList.remove("is-entering");
-    });
-    document.querySelectorAll('a[href="/"]').forEach(a=>{
-      a.addEventListener("click",(e)=>{
-        e.preventDefault();
-        document.documentElement.classList.add("is-transitioning");
-        setTimeout(()=>location.href="/", 520);
-      });
-    });
+</div>
 
-    const subj=document.getElementById("subj");
-    const msg=document.getElementById("msg");
-    document.getElementById("clear").onclick=()=>{subj.value="";msg.value="";};
-    document.getElementById("send").onclick=()=>{
-      const s=encodeURIComponent(subj.value || "CASINA SIGNAL");
-      const m=encodeURIComponent(msg.value || "");
-      // TODO: replace email address
-      location.href = `mailto:hello@yourdomain.com?subject=${s}&body=${m}`;
-    };
-  </script>
+<script>
+document.body.classList.add("is-entering");
+requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.remove("is-entering")));
+
+window.addEventListener("pageshow",()=>{
+  document.documentElement.classList.remove("is-transitioning");
+});
+
+document.querySelectorAll('a[href="/"]').forEach(a=>{
+  a.addEventListener("click",(e)=>{
+    e.preventDefault();
+    document.documentElement.classList.add("is-transitioning");
+    setTimeout(()=>location.href="/",500);
+  });
+});
+
+// simple form behaviors
+const subj=document.getElementById("subj");
+const msg=document.getElementById("msg");
+
+document.getElementById("clear").onclick=()=>{subj.value="";msg.value="";};
+
+document.getElementById("send").onclick=()=>{
+  const s=encodeURIComponent(subj.value || "CASINA SIGNAL");
+  const m=encodeURIComponent(msg.value || "");
+  // TODO: replace email address
+  location.href = `mailto:hello@yourdomain.com?subject=${s}&body=${m}`;
+};
+</script>
 </body>
 </html>

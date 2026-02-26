@@ -1,122 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>STORE — CASINA</title>
-  <style>
-    :root{--c:rgba(0,255,255,.85);}
-    html,body{margin:0;height:100%;background:#000;font-family:monospace;overflow:auto;}
-    body{opacity:1;transition:opacity .6s ease, filter .6s ease;}
-    body.is-entering{opacity:0;filter:blur(2px);}
-    html.is-transitioning body{opacity:0;filter:blur(2px);}
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>STORE — CASINA</title>
 
-    .wrap{min-height:100%;padding:18px;}
-    .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:sticky;top:0;padding:10px 0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:2;}
-    .hud{color:var(--c);opacity:.78;letter-spacing:3px;user-select:none;}
-    .hud .sub{opacity:.55;letter-spacing:2px;font-size:12px;margin-top:6px}
-    .btn{color:var(--c);text-decoration:none;border:1px solid rgba(0,255,255,.25);background:rgba(0,255,255,.06);
-      padding:10px 12px;border-radius:14px;letter-spacing:2px;font-size:12px;opacity:.85;white-space:nowrap;}
-    .btn:hover{opacity:1}
+<style>
+:root{
+  --c: rgba(0,255,255,.85);
+  --bg: #000;
 
-    .grid{
-      margin:18px auto 60px;
-      width:min(980px,92vw);
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:14px;
-    }
-    @media (max-width: 880px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
-    @media (max-width: 520px){.grid{grid-template-columns:repeat(1,minmax(0,1fr));}}
+  --fs-1: clamp(12px,1.1vw,16px);
+  --fs-2: clamp(16px,1.6vw,24px);
+  --ls-1: clamp(1px,.25vw,4px);
 
-    .card{
-      border-radius:18px;
-      border:1px solid rgba(0,255,255,.18);
-      background: radial-gradient(620px 220px at 30% 25%, rgba(0,255,255,.10), transparent 60%), rgba(0,255,255,.04);
-      padding:14px;
-      color:var(--c);
-      opacity:.85;
-      transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
-    }
-    .card:hover{transform:translateY(-2px);border-color:rgba(0,255,255,.35);box-shadow:0 0 40px rgba(0,255,255,.10)}
-    .name{letter-spacing:3px;font-size:14px}
-    .meta{opacity:.55;letter-spacing:2px;font-size:12px;margin-top:8px;line-height:1.4}
-    .tag{
-      display:inline-block;margin-top:12px;
-      padding:6px 10px;border-radius:999px;
-      border:1px solid rgba(0,255,255,.18);
-      background:rgba(0,0,0,.22);
-      opacity:.7;letter-spacing:2px;font-size:11px;
-    }
-    .note{
-      width:min(980px,92vw);margin:0 auto 24px;
-      color:var(--c);opacity:.38;letter-spacing:2px;line-height:1.55;font-size:12px;
-    }
-  </style>
+  --pad: clamp(14px,2vw,24px);
+  --radius: 20px;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--c);font-family:monospace}
+body{min-height:100svh;min-height:100dvh;opacity:1;transition:opacity .6s ease,filter .6s ease}
+body.is-entering{opacity:0;filter:blur(2px)}
+html.is-transitioning body{opacity:0;filter:blur(2px)}
+
+.safe{
+  padding:
+    calc(var(--pad) + env(safe-area-inset-top))
+    calc(var(--pad) + env(safe-area-inset-right))
+    calc(var(--pad) + env(safe-area-inset-bottom))
+    calc(var(--pad) + env(safe-area-inset-left));
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.title{
+  font-size:var(--fs-2);
+  letter-spacing:var(--ls-1);
+  opacity:.85;
+}
+
+.sub{
+  margin-top:6px;
+  font-size:var(--fs-1);
+  letter-spacing:var(--ls-1);
+  opacity:.55;
+  max-width: 70ch;
+}
+
+.btn{
+  text-decoration:none;
+  color:var(--c);
+  border:1px solid rgba(0,255,255,.25);
+  padding:10px 14px;
+  border-radius:14px;
+  font-size:var(--fs-1);
+  letter-spacing:var(--ls-1);
+  opacity:.8;
+  white-space:nowrap;
+}
+.btn:hover{opacity:1}
+
+.grid{
+  margin-top:28px;
+  display:grid;
+  gap:18px;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+}
+
+.card{
+  border-radius:var(--radius);
+  border:1px solid rgba(0,255,255,.2);
+  background:rgba(0,255,255,.05);
+  padding:16px;
+  opacity:.85;
+  transition:.25s;
+}
+.card:hover{
+  transform:translateY(-3px);
+  opacity:1;
+  box-shadow:0 0 30px rgba(0,255,255,.10);
+}
+
+.k{font-size:var(--fs-1);letter-spacing:var(--ls-1);opacity:.55}
+.v{margin-top:8px;font-size:var(--fs-1);letter-spacing:var(--ls-1);opacity:.85;line-height:1.5}
+
+.tag{
+  display:inline-block;
+  margin-top:12px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(0,255,255,.18);
+  background:rgba(0,0,0,.25);
+  font-size:var(--fs-1);
+  letter-spacing:var(--ls-1);
+  opacity:.65;
+}
+
+footer{
+  margin-top:26px;
+  font-size:var(--fs-1);
+  letter-spacing:var(--ls-1);
+  opacity:.35;
+}
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div class="hud">
-        STORE // INTERFACE
-        <div class="sub">no checkout here yet · just catalog + links later</div>
-      </div>
-      <a class="btn" href="/">← HOME</a>
-    </div>
+<div class="safe">
 
-    <div class="note">
-      This page is intentionally “cold”: it’s a catalog layer, not the myth layer.
-      When you’re ready, you can link out to Gumroad / Etsy / Shopify, or keep it as a static menu.
+  <div class="topbar">
+    <div>
+      <div class="title">STORE</div>
+      <div class="sub">Catalog layer only. Checkout can be external later (Gumroad / Etsy / Shopify) or kept offline.</div>
     </div>
-
-    <section class="grid">
-      <div class="card">
-        <div class="name">ITEM 01</div>
-        <div class="meta">format: digital / pack<br/>status: offline</div>
-        <div class="tag">COMING SOON</div>
-      </div>
-      <div class="card">
-        <div class="name">ITEM 02</div>
-        <div class="meta">format: physical / artifact<br/>status: offline</div>
-        <div class="tag">COMING SOON</div>
-      </div>
-      <div class="card">
-        <div class="name">ITEM 03</div>
-        <div class="meta">format: membership / access<br/>status: offline</div>
-        <div class="tag">COMING SOON</div>
-      </div>
-      <div class="card">
-        <div class="name">ITEM 04</div>
-        <div class="meta">format: unknown<br/>status: restricted</div>
-        <div class="tag">RESTRICTED</div>
-      </div>
-      <div class="card">
-        <div class="name">ITEM 05</div>
-        <div class="meta">format: unknown<br/>status: restricted</div>
-        <div class="tag">RESTRICTED</div>
-      </div>
-      <div class="card">
-        <div class="name">ITEM 06</div>
-        <div class="meta">format: unknown<br/>status: restricted</div>
-        <div class="tag">RESTRICTED</div>
-      </div>
-    </section>
+    <a class="btn" href="/">HOME</a>
   </div>
 
-  <script>
-    document.body.classList.add("is-entering");
-    requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.remove("is-entering")));
-    window.addEventListener("pageshow", () => {
-      document.documentElement.classList.remove("is-transitioning");
-      document.body.classList.remove("is-entering");
-    });
-    document.querySelectorAll('a[href="/"]').forEach(a=>{
-      a.addEventListener("click",(e)=>{
-        e.preventDefault();
-        document.documentElement.classList.add("is-transitioning");
-        setTimeout(()=>location.href="/", 520);
-      });
-    });
-  </script>
+  <section class="grid">
+    <div class="card">
+      <div class="k">ITEM 01</div>
+      <div class="v">Digital pack · status: offline</div>
+      <div class="tag">COMING SOON</div>
+    </div>
+    <div class="card">
+      <div class="k">ITEM 02</div>
+      <div class="v">Artifact · status: restricted</div>
+      <div class="tag">RESTRICTED</div>
+    </div>
+    <div class="card">
+      <div class="k">ITEM 03</div>
+      <div class="v">Access / membership · status: offline</div>
+      <div class="tag">LOCKED</div>
+    </div>
+    <div class="card">
+      <div class="k">ITEM 04</div>
+      <div class="v">Unknown · status: sealed</div>
+      <div class="tag">SEALED</div>
+    </div>
+    <div class="card">
+      <div class="k">ITEM 05</div>
+      <div class="v">Unknown · status: sealed</div>
+      <div class="tag">SEALED</div>
+    </div>
+    <div class="card">
+      <div class="k">ITEM 06</div>
+      <div class="v">Unknown · status: sealed</div>
+      <div class="tag">SEALED</div>
+    </div>
+  </section>
+
+  <footer>Tip: keep STORE cold + readable. Myth lives in VISUAL/HIVE.</footer>
+
+</div>
+
+<script>
+document.body.classList.add("is-entering");
+requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.remove("is-entering")));
+
+window.addEventListener("pageshow",()=>{
+  document.documentElement.classList.remove("is-transitioning");
+});
+
+document.querySelectorAll('a[href="/"]').forEach(a=>{
+  a.addEventListener("click",(e)=>{
+    e.preventDefault();
+    document.documentElement.classList.add("is-transitioning");
+    setTimeout(()=>location.href="/",500);
+  });
+});
+</script>
 </body>
 </html>
