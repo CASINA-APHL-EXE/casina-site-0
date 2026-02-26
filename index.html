@@ -133,7 +133,7 @@
       #portalUI .hex:nth-child(5) { left: 82%; top: 66%; }
     }
 
-    /* ===== Insane Manifesto Anchor ===== */
+    /* ===== Insane Manifesto Anchor (new) ===== */
     #manifesto {
       position: fixed;
       left: 50%;
@@ -249,41 +249,7 @@
       }
     }
 
-    function makeEyeDot() {
-      const size = 96;
-      const c = document.createElement("canvas");
-      c.width = c.height = size;
-      const ctx = c.getContext("2d");
-
-      const g = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
-      g.addColorStop(0.00, "rgba(255,40,40,1.00)");
-      g.addColorStop(0.12, "rgba(255,20,20,0.95)");
-      g.addColorStop(0.28, "rgba(255,0,0,0.55)");
-      g.addColorStop(0.55, "rgba(255,0,0,0.16)");
-      g.addColorStop(1.00, "rgba(255,0,0,0.00)");
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, size, size);
-
-      const tex = new THREE.CanvasTexture(c);
-      tex.colorSpace = THREE.SRGBColorSpace;
-
-      const mat = new THREE.SpriteMaterial({
-        map: tex,
-        color: 0xffffff,
-        transparent: true,
-        opacity: 1.0,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-        depthTest: true
-      });
-
-      const s = new THREE.Sprite(mat);
-      s.scale.set(0.035, 0.035, 0.035);
-      s.renderOrder = 999;
-      return s;
-    }
-
-    // ===== Insane Manifesto System =====
+    // ===== Insane Manifesto System (new) =====
     const manifestoEl = document.getElementById("manifesto");
 
     const MANIFESTO_LINES = [
@@ -366,7 +332,7 @@
       });
     });
 
-    // ===== Particles =====
+    // ===== Particles (unchanged parameters) =====
     const pCanvas = document.getElementById("particlesCanvas");
     const pCtx = pCanvas.getContext("2d");
 
@@ -641,7 +607,7 @@
 
     tickParticles();
 
-    // ===== Three.js =====
+    // ===== Three.js (unchanged numbers) =====
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
@@ -659,9 +625,7 @@
     scene.add(key);
 
     let head = null;
-    let eyeRig = null;
-    let eyeL = null;
-    let eyeR = null;
+
     const loader = new GLTFLoader();
     loader.load("/head.glb", (gltf) => {
       head = gltf.scene;
@@ -685,33 +649,6 @@
         edgeOpacity: 0.55
       });
 
-      eyeL = makeEyeDot();
-      eyeR = makeEyeDot();
-
-      eyeRig = new THREE.Group();
-      head.add(eyeRig);
-
-      // Auto-place eyes using head bounding box (robust across GLB variations).
-      const bbox = new THREE.Box3().setFromObject(head);
-      const size = new THREE.Vector3();
-      const center = new THREE.Vector3();
-      bbox.getSize(size);
-      bbox.getCenter(center);
-
-      // Face-ish anchor: slightly above center, slightly forward.
-      eyeRig.position.set(
-        center.x,
-        center.y + size.y * -0.02,
-        center.z + size.z * 0.23
-      );
-
-      const eyeSep = size.x * 0.15;  // distance between eyes
-      eyeL.position.set(-eyeSep * 0.5, 0, 0);
-      eyeR.position.set( eyeSep * 0.5, 0, 0);
-
-      eyeRig.add(eyeL);
-      eyeRig.add(eyeR);
-
       scene.add(head);
       console.log("GLB LOADED + HOLO");
     }, undefined, (err) => {
@@ -719,46 +656,6 @@
     });
 
     const m3 = { x: 0, y: 0 };
-
-    // ===== Eye behavior =====
-    const eyeState = {
-      maxYaw: 0.10,
-      maxPitch: 0.10,
-      follow: 0.065,
-
-      // overall eye visibility (0..1)
-      globalAlpha: 0.50,
-
-      // slow breathing while ON
-      pulseBase: 0.70,
-      pulseAmp: 0.30,
-      pulseSpeed: 0.85,
-
-      // ON/OFF cycle (seconds): long OFF, short ON
-      onDuration: 0.55,
-      offDuration: 3.20,
-      fade: 0.12
-    };
-
-    function smoothstep(edge0, edge1, x){
-      const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0 + 1e-9)));
-      return t * t * (3 - 2 * t);
-    }
-
-    function cycleIntensity(nowSec){
-      const cycle = eyeState.onDuration + eyeState.offDuration;
-      const p = nowSec % cycle;
-
-      // OFF segment
-      if (p >= eyeState.onDuration) return 0;
-
-      // ON segment with soft fade in/out
-      const a = smoothstep(0, eyeState.fade, p);
-      const b = smoothstep(0, eyeState.fade, eyeState.onDuration - p);
-      return a * b;
-    }
-(a, b){ return a + Math.random() * (b - a); }
-
     window.addEventListener("mousemove", (e) => {
       m3.x = (e.clientX / window.innerWidth) * 2 - 1;
       m3.y = (e.clientY / window.innerHeight) * 2 - 1;
@@ -786,27 +683,6 @@
         const targetX = m3.y * 0.25;
         head.rotation.y = lerp(head.rotation.y, targetY, 0.08);
         head.rotation.x = lerp(head.rotation.x, targetX, 0.08);
-        
-        if (eyeRig && eyeL && eyeR){
-          const nowSec = performance.now() / 1000;
-
-          const targetYaw = (m3.x * eyeState.maxYaw);
-          const targetPitch = (-m3.y * eyeState.maxPitch);
-
-          eyeRig.rotation.y = lerp(eyeRig.rotation.y, targetYaw, eyeState.follow);
-          eyeRig.rotation.x = lerp(eyeRig.rotation.x, targetPitch, eyeState.follow);
-
-          const on = cycleIntensity(nowSec);
-          const pulse = eyeState.pulseBase + eyeState.pulseAmp * Math.sin(t * eyeState.pulseSpeed);
-          const op = on * pulse;
-
-          eyeL.material.opacity = op * eyeState.globalAlpha;
-          eyeR.material.opacity = op * eyeState.globalAlpha;
-
-          eyeL.scale.set(0.05, 0.05, 0.05);
-          eyeR.scale.set(0.05, 0.05, 0.05);
-        }
-
       }
 
       renderer.render(scene, camera);
