@@ -16,6 +16,25 @@
       font-family: monospace;
     }
 
+    /* ===== Page transitions (NEW) ===== */
+    body{
+      opacity: 1;
+      transition: opacity .6s ease, filter .6s ease;
+      will-change: opacity, filter;
+    }
+
+    /* entering (on load) */
+    body.is-entering{
+      opacity: 0;
+      filter: blur(2px);
+    }
+
+    /* leaving (on navigation) */
+    html.is-transitioning body{
+      opacity: 0;
+      filter: blur(2px);
+    }
+
     #particlesCanvas {
       position: fixed;
       inset: 0;
@@ -133,7 +152,7 @@
       #portalUI .hex:nth-child(5) { left: 82%; top: 66%; }
     }
 
-    /* ===== Insane Manifesto Anchor (new) ===== */
+    /* ===== Insane Manifesto Anchor ===== */
     #manifesto {
       position: fixed;
       left: 50%;
@@ -194,16 +213,23 @@
     <a class="hex" href="/contact" data-key="CONTACT"><span>CONTACT</span></a>
   </nav>
 
-  <!-- New: bottom anchor -->
   <div id="manifesto">the process has already begun</div>
 
   <script type="module">
     import * as THREE from "three";
     import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
+    // ===== Enter transition on load (NEW) =====
+    document.body.classList.add("is-entering");
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.body.classList.remove("is-entering");
+      });
+    });
+
     function addHoloOverlay(root, options = {}) {
       const color = options.color ?? 0x00ffff;
-      const wireOpacity = options.wireOpacity ?? 0x00ffff; // kept original behavior via caller (caller passes numbers)
+      const wireOpacity = options.wireOpacity ?? 0x00ffff;
       const edgeOpacity = options.edgeOpacity ?? 0.55;
 
       const meshes = [];
@@ -249,7 +275,7 @@
       }
     }
 
-    // ===== Insane Manifesto System (new) =====
+    // ===== Manifesto System =====
     const manifestoEl = document.getElementById("manifesto");
 
     const MANIFESTO_LINES = [
@@ -287,20 +313,16 @@
     window.addEventListener("pointerdown", markActivity, { passive: true });
     window.addEventListener("keydown", markActivity);
 
-    // subtle flicker loop (tiny, feels like signal)
     function manifestoFlicker() {
       const now = performance.now();
-
-      // idle swap after 8s of no activity, then every ~6.5s
       const idleFor = now - lastUserActivity;
+
       if (now > hoverLockUntil && idleFor > 3500 && (now - lastManifestoSwap) > 3200) {
         manifestoIndex = (manifestoIndex + 1) % MANIFESTO_LINES.length;
         setManifesto(MANIFESTO_LINES[manifestoIndex], true);
         lastManifestoSwap = now;
       }
 
-      // micro flicker: rarely boost opacity for a frame-ish
-      // (no hardcoded keyframes; stays organic)
       const r = Math.random();
       if (r < 0.015) {
         manifestoEl.style.opacity = "0.44";
@@ -311,7 +333,7 @@
     }
     manifestoFlicker();
 
-    // portal hover shows routing, then returns to idle
+    // ===== Portal hover + click routing (FIXED) =====
     document.querySelectorAll("#portalUI .hex").forEach((a) => {
       a.addEventListener("mouseenter", () => {
         hoverLockUntil = performance.now() + 1200;
@@ -321,18 +343,26 @@
 
       a.addEventListener("mouseleave", () => {
         hoverLockUntil = performance.now() + 600;
-        // revert to current line (or base line)
         setManifesto(MANIFESTO_LINES[manifestoIndex], false);
       });
 
+      // Real navigation + transition
       a.addEventListener("click", (e) => {
         e.preventDefault();
-        const key = a.dataset.key || a.textContent.trim();
-        location.hash = key.toLowerCase();
+
+        const url = a.getAttribute("href");
+        const key = (a.dataset.key || a.textContent.trim()).toUpperCase();
+
+        setManifesto(`routing → ${key.toLowerCase()}`, true);
+        document.documentElement.classList.add("is-transitioning");
+
+        setTimeout(() => {
+          window.location.href = url;
+        }, 600);
       });
     });
 
-    // ===== Particles (unchanged parameters) =====
+    // ===== Particles =====
     const pCanvas = document.getElementById("particlesCanvas");
     const pCtx = pCanvas.getContext("2d");
 
@@ -607,7 +637,7 @@
 
     tickParticles();
 
-    // ===== Three.js (unchanged numbers) =====
+    // ===== Three.js =====
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
