@@ -785,8 +785,9 @@
           eyeRig.rotation.x = lerp(eyeRig.rotation.x, targetPitch, eyeState.follow);
 
           // tiny asymmetric "attention" — not perfectly mirrored
-          eyeL.position.y = lerp(eyeL.position.y, eyeState._sy * 0.004, 0.08);
-          eyeR.position.y = lerp(eyeR.position.y, -eyeState._sy * 0.003, 0.08);
+          const yOff = eyeState._sy * 0.0035;
+          eyeL.position.y = lerp(eyeL.position.y, yOff, 0.08);
+          eyeR.position.y = lerp(eyeR.position.y, yOff, 0.08);
 
           // flicker / scan pulse
           if (Math.random() < eyeState.flickerChance){
