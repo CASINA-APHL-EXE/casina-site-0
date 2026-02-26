@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HIVE — CASINA</title>
+  <style>
+    :root{--c:rgba(0,255,255,.85);}
+    html,body{margin:0;height:100%;background:#000;font-family:monospace;overflow:hidden;}
+    body{opacity:1;transition:opacity .6s ease, filter .6s ease;}
+    body.is-entering{opacity:0;filter:blur(2px);}
+    html.is-transitioning body{opacity:0;filter:blur(2px);}
+
+    #hive{position:fixed;inset:0;z-index:0;}
+    .hud{position:fixed;top:18px;left:18px;z-index:2;color:var(--c);opacity:.78;letter-spacing:3px;user-select:none;}
+    .hud .sub{opacity:.55;letter-spacing:2px;font-size:12px;margin-top:6px}
+    .nav{position:fixed;top:18px;right:18px;z-index:2;display:flex;gap:10px;}
+    .btn{color:var(--c);text-decoration:none;border:1px solid rgba(0,255,255,.25);background:rgba(0,255,255,.06);
+      padding:10px 12px;border-radius:14px;letter-spacing:2px;font-size:12px;opacity:.85;}
+    .btn:hover{opacity:1}
+    .tip{
+      position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+      color:var(--c);opacity:.28;letter-spacing:3px;user-select:none;pointer-events:none;
+      white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis;
+    }
+    .badge{
+      position:fixed;left:18px;bottom:18px;z-index:2;
+      color:var(--c);opacity:.55;letter-spacing:2px;font-size:12px;
+      border:1px solid rgba(0,255,255,.18);background:rgba(0,255,255,.05);
+      padding:10px 12px;border-radius:16px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="hive"></canvas>
+
+  <div class="hud">
+    HIVE // MAP PROTOCOL
+    <div class="sub">drag to pan · scroll to zoom · center = owner node</div>
+  </div>
+
+  <div class="nav">
+    <a class="btn" href="/">← HOME</a>
+  </div>
+
+  <div class="badge" id="readout">ZOOM: 1.00 · OFFSET: 0,0</div>
+  <div class="tip">infinite hex lattice · territory expands when observed</div>
+
+  <script>
+    // transitions + bfcache
+    document.body.classList.add("is-entering");
+    requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.remove("is-entering")));
+    window.addEventListener("pageshow", () => {
+      document.documentElement.classList.remove("is-transitioning");
+      document.body.classList.remove("is-entering");
+    });
+    document.querySelectorAll('a[href="/"]').forEach(a=>{
+      a.addEventListener("click",(e)=>{
+        e.preventDefault();
+        document.documentElement.classList.add("is-transitioning");
+        setTimeout(()=>location.href="/", 520);
+      });
+    });
+
+    // Hive canvas
+    const canvas=document.getElementById("hive");
+    const ctx=canvas.getContext("2d");
+    let W=0,H=0,DPR=1;
+    function resize(){
+      DPR=Math.min(2, devicePixelRatio||1);
+      W=innerWidth; H=innerHeight;
+      canvas.width=Math.floor(W*DPR); canvas.height=Math.floor(H*DPR);
+      canvas.style.width=W+"px"; canvas.style.height=H+"px";
+      ctx.setTransform(DPR,0,0,DPR,0,0);
+    }
+    addEventListener("resize", resize); resize();
+
+    const readout=document.getElementById("readout");
+    let zoom=1, ox=0, oy=0;
+    let dragging=false, lx=0, ly=0;
+
+    function hexPath(cx,cy,r){
+      const a = Math.PI/3;
+      ctx.beginPath();
+      for(let i=0;i<6;i++){
+        const x=cx+Math.cos(a*i+Math.PI/6)*r;
+        const y=cy+Math.sin(a*i+Math.PI/6)*r;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+    }
+
+    canvas.addEventListener("pointerdown",(e)=>{dragging=true; lx=e.clientX; ly=e.clientY; canvas.setPointerCapture(e.pointerId);});
+    canvas.addEventListener("pointerup",(e)=>{dragging=false;});
+    canvas.addEventListener("pointermove",(e)=>{
+      if(!dragging) return;
+      const dx=e.clientX-lx, dy=e.clientY-ly;
+      ox += dx; oy += dy;
+      lx=e.clientX; ly=e.clientY;
+    });
+
+    addEventListener("wheel",(e)=>{
+      const prev=zoom;
+      const delta = Math.sign(e.deltaY);
+      zoom *= (delta>0 ? 0.92 : 1.08);
+      zoom = Math.max(0.35, Math.min(2.6, zoom));
+
+      // zoom toward cursor
+      const mx=e.clientX, my=e.clientY;
+      const k = zoom/prev;
+      ox = mx - (mx - ox)*k;
+      oy = my - (my - oy)*k;
+
+      e.preventDefault();
+    }, {passive:false});
+
+    let t=0;
+    function draw(){
+      t+=0.016;
+      ctx.fillStyle="rgba(0,0,0,0.26)";
+      ctx.fillRect(0,0,W,H);
+
+      const base = 46 * zoom;
+      const w = base * 2;
+      const h = Math.sqrt(3) * base;
+      const xStep = 1.5 * base;
+      const yStep = h;
+
+      // center "owner node"
+      const cx0 = W/2 + ox;
+      const cy0 = H/2 + oy;
+
+      // draw lattice within view bounds
+      const cols = Math.ceil(W / xStep) + 6;
+      const rows = Math.ceil(H / yStep) + 6;
+
+      for(let q=-cols; q<cols; q++){
+        for(let r=-rows; r<rows; r++){
+          const x = cx0 + q*xStep;
+          const y = cy0 + r*yStep + (q%2)* (yStep/2);
+
+          // fade by distance to center
+          const dx = x - (W/2);
+          const dy = y - (H/2);
+          const dist = Math.hypot(dx,dy);
+          const a = Math.max(0, 0.26 - dist/(Math.min(W,H)*2.4));
+
+          if(a<=0) continue;
+
+          ctx.strokeStyle = `rgba(0,255,255,${a})`;
+          ctx.lineWidth = 1;
+          hexPath(x,y,base);
+          ctx.stroke();
+
+          // occasional inner edge
+          if(((q*31+r*17) % 11)===0){
+            ctx.strokeStyle = `rgba(0,255,255,${a*0.55})`;
+            ctx.lineWidth = 1;
+            hexPath(x,y,base*0.82);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // core node
+      const corePulse = 1 + Math.sin(t*1.7)*0.06;
+      ctx.strokeStyle = "rgba(0,255,255,0.75)";
+      ctx.lineWidth = 2;
+      hexPath(W/2, H/2, 62*corePulse);
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(0,255,255,0.12)";
+      hexPath(W/2, H/2, 62*corePulse);
+      ctx.fill();
+
+      readout.textContent = `ZOOM: ${zoom.toFixed(2)} · OFFSET: ${Math.round(ox)},${Math.round(oy)}`;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  </script>
+</body>
+</html>

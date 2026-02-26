@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>COMPANY — CASINA</title>
+  <style>
+    :root{--c:rgba(0,255,255,.85);}
+    html,body{margin:0;height:100%;background:#000;font-family:monospace;overflow:auto;}
+    body{opacity:1;transition:opacity .6s ease, filter .6s ease;}
+    body.is-entering{opacity:0;filter:blur(2px);}
+    html.is-transitioning body{opacity:0;filter:blur(2px);}
+
+    .wrap{min-height:100%;padding:18px 18px 60px;}
+    .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:sticky;top:0;padding:10px 0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:2;}
+    .hud{color:var(--c);opacity:.78;letter-spacing:3px;user-select:none;}
+    .hud .sub{opacity:.55;letter-spacing:2px;font-size:12px;margin-top:6px}
+    .btn{color:var(--c);text-decoration:none;border:1px solid rgba(0,255,255,.25);background:rgba(0,255,255,.06);
+      padding:10px 12px;border-radius:14px;letter-spacing:2px;font-size:12px;opacity:.85;white-space:nowrap;}
+    .btn:hover{opacity:1}
+
+    .card{
+      width:min(980px,92vw);margin:18px auto 0;
+      border-radius:22px;
+      border:1px solid rgba(0,255,255,.18);
+      background:
+        radial-gradient(900px 360px at 40% 20%, rgba(0,255,255,.10), transparent 60%),
+        rgba(0,255,255,.04);
+      padding:18px;
+      color:var(--c);
+      box-shadow:0 0 60px rgba(0,255,255,.10);
+    }
+    .title{letter-spacing:3px;font-size:14px;opacity:.9}
+    .mono{opacity:.55;letter-spacing:2px;font-size:12px;line-height:1.6;margin-top:10px}
+    .grid{
+      display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;margin-top:14px;
+    }
+    @media (max-width: 720px){ .grid{grid-template-columns:1fr;} }
+    .box{
+      border-radius:18px;
+      border:1px solid rgba(0,255,255,.16);
+      background:rgba(0,0,0,.25);
+      padding:14px;
+    }
+    .k{opacity:.55;letter-spacing:2px;font-size:11px}
+    .v{letter-spacing:2px;margin-top:8px;font-size:12px;opacity:.85;line-height:1.5}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="hud">
+        COMPANY // IDENTITY LAYER
+        <div class="sub">official face · minimal narrative</div>
+      </div>
+      <a class="btn" href="/">← HOME</a>
+    </div>
+
+    <div class="card">
+      <div class="title">XERLEVATE L.L.C. — SYSTEM AFFILIATION (placeholder)</div>
+      <div class="mono">
+        This page is intentionally clean and readable.<br/>
+        The myth lives elsewhere. This is the part that convinces humans.
+      </div>
+
+      <div class="grid">
+        <div class="box">
+          <div class="k">MISSION</div>
+          <div class="v">Build interactive systems that compress art + signal + identity into a living interface.</div>
+        </div>
+        <div class="box">
+          <div class="k">CAPABILITIES</div>
+          <div class="v">Realtime visual systems · Tech-art pipelines · Web-based interactive experiences · Audio-reactive modules</div>
+        </div>
+        <div class="box">
+          <div class="k">STATUS</div>
+          <div class="v">Active development · selective releases · controlled access</div>
+        </div>
+        <div class="box">
+          <div class="k">NOTE</div>
+          <div class="v">If you need a “normal” portfolio, you are on the wrong page.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.body.classList.add("is-entering");
+    requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.remove("is-entering")));
+    window.addEventListener("pageshow", () => {
+      document.documentElement.classList.remove("is-transitioning");
+      document.body.classList.remove("is-entering");
+    });
+    document.querySelectorAll('a[href="/"]').forEach(a=>{
+      a.addEventListener("click",(e)=>{
+        e.preventDefault();
+        document.documentElement.classList.add("is-transitioning");
+        setTimeout(()=>location.href="/", 520);
+      });
+    });
+  </script>
+</body>
+</html>

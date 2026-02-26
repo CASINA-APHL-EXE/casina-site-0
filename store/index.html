@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>STORE — CASINA</title>
+  <style>
+    :root{--c:rgba(0,255,255,.85);}
+    html,body{margin:0;height:100%;background:#000;font-family:monospace;overflow:auto;}
+    body{opacity:1;transition:opacity .6s ease, filter .6s ease;}
+    body.is-entering{opacity:0;filter:blur(2px);}
+    html.is-transitioning body{opacity:0;filter:blur(2px);}
+
+    .wrap{min-height:100%;padding:18px;}
+    .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:sticky;top:0;padding:10px 0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:2;}
+    .hud{color:var(--c);opacity:.78;letter-spacing:3px;user-select:none;}
+    .hud .sub{opacity:.55;letter-spacing:2px;font-size:12px;margin-top:6px}
+    .btn{color:var(--c);text-decoration:none;border:1px solid rgba(0,255,255,.25);background:rgba(0,255,255,.06);
+      padding:10px 12px;border-radius:14px;letter-spacing:2px;font-size:12px;opacity:.85;white-space:nowrap;}
+    .btn:hover{opacity:1}
+
+    .grid{
+      margin:18px auto 60px;
+      width:min(980px,92vw);
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:14px;
+    }
+    @media (max-width: 880px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    @media (max-width: 520px){.grid{grid-template-columns:repeat(1,minmax(0,1fr));}}
+
+    .card{
+      border-radius:18px;
+      border:1px solid rgba(0,255,255,.18);
+      background: radial-gradient(620px 220px at 30% 25%, rgba(0,255,255,.10), transparent 60%), rgba(0,255,255,.04);
+      padding:14px;
+      color:var(--c);
+      opacity:.85;
+      transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .card:hover{transform:translateY(-2px);border-color:rgba(0,255,255,.35);box-shadow:0 0 40px rgba(0,255,255,.10)}
+    .name{letter-spacing:3px;font-size:14px}
+    .meta{opacity:.55;letter-spacing:2px;font-size:12px;margin-top:8px;line-height:1.4}
+    .tag{
+      display:inline-block;margin-top:12px;
+      padding:6px 10px;border-radius:999px;
+      border:1px solid rgba(0,255,255,.18);
+      background:rgba(0,0,0,.22);
+      opacity:.7;letter-spacing:2px;font-size:11px;
+    }
+    .note{
+      width:min(980px,92vw);margin:0 auto 24px;
+      color:var(--c);opacity:.38;letter-spacing:2px;line-height:1.55;font-size:12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="hud">
+        STORE // INTERFACE
+        <div class="sub">no checkout here yet · just catalog + links later</div>
+      </div>
+      <a class="btn" href="/">← HOME</a>
+    </div>
+
+    <div class="note">
+      This page is intentionally “cold”: it’s a catalog layer, not the myth layer.
+      When you’re ready, you can link out to Gumroad / Etsy / Shopify, or keep it as a static menu.
+    </div>
+
+    <section class="grid">
+      <div class="card">
+        <div class="name">ITEM 01</div>
+        <div class="meta">format: digital / pack<br/>status: offline</div>
+        <div class="tag">COMING SOON</div>
+      </div>
+      <div class="card">
+        <div class="name">ITEM 02</div>
+        <div class="meta">format: physical / artifact<br/>status: offline</div>
+        <div class="tag">COMING SOON</div>
+      </div>
+      <div class="card">
+        <div class="name">ITEM 03</div>
+        <div class="meta">format: membership / access<br/>status: offline</div>
+        <div class="tag">COMING SOON</div>
+      </div>
+      <div class="card">
+        <div class="name">ITEM 04</div>
+        <div class="meta">format: unknown<br/>status: restricted</div>
+        <div class="tag">RESTRICTED</div>
+      </div>
+      <div class="card">
+        <div class="name">ITEM 05</div>
+        <div class="meta">format: unknown<br/>status: restricted</div>
+        <div class="tag">RESTRICTED</div>
+      </div>
+      <div class="card">
+        <div class="name">ITEM 06</div>
+        <div class="meta">format: unknown<br/>status: restricted</div>
+        <div class="tag">RESTRICTED</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    document.body.classList.add("is-entering");
+    requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.remove("is-entering")));
+    window.addEventListener("pageshow", () => {
+      document.documentElement.classList.remove("is-transitioning");
+      document.body.classList.remove("is-entering");
+    });
+    document.querySelectorAll('a[href="/"]').forEach(a=>{
+      a.addEventListener("click",(e)=>{
+        e.preventDefault();
+        document.documentElement.classList.add("is-transitioning");
+        setTimeout(()=>location.href="/", 520);
+      });
+    });
+  </script>
+</body>
+</html>
