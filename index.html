@@ -659,9 +659,9 @@
     scene.add(key);
 
     let head = null;
+    let eyeRig = null;
     let eyeL = null;
     let eyeR = null;
-
     const loader = new GLTFLoader();
     loader.load("/head.glb", (gltf) => {
       head = gltf.scene;
@@ -688,19 +688,59 @@
       eyeL = makeEyeDot();
       eyeR = makeEyeDot();
 
-      eyeL.position.set(-0.030, -0.005, 0.04);
-      eyeR.position.set( 0.030, -0.005, 0.04);
+      eyeRig = new THREE.Group();
+      head.add(eyeRig);
 
-      head.add(eyeL);
-      head.add(eyeR);
+      // Auto-place eyes using head bounding box (robust across GLB variations).
+      const bbox = new THREE.Box3().setFromObject(head);
+      const size = new THREE.Vector3();
+      const center = new THREE.Vector3();
+      bbox.getSize(size);
+      bbox.getCenter(center);
 
-      scene.add(head);
+      // Face-ish anchor: slightly above center, slightly forward.
+      eyeRig.position.set(
+        center.x,
+        center.y + size.y * 0.06,
+        center.z + size.z * 0.18
+      );
+
+      const eyeSep = size.x * 0.10;  // distance between eyes
+      eyeL.position.set(-eyeSep * 0.5, 0, 0);
+      eyeR.position.set( eyeSep * 0.5, 0, 0);
+
+      eyeRig.add(eyeL);
+      eyeRig.add(eyeR);scene.add(head);
       console.log("GLB LOADED + HOLO");
     }, undefined, (err) => {
       console.error("GLB load error", err);
     });
 
     const m3 = { x: 0, y: 0 };
+
+    // ===== Eye behavior (advanced) =====
+    const eyeState = {
+      // how much the eyes "look" toward cursor (in radians)
+      maxYaw: 0.22,
+      maxPitch: 0.16,
+
+      // lag: smaller = more sluggish / "conscious"
+      follow: 0.065,
+
+      // micro saccades (organic jitter)
+      saccadeAmp: 0.020,
+      saccadeEvery: 420,   // ms
+      _nextSaccade: 0,
+      _sx: 0,
+      _sy: 0,
+
+      // scan/flicker vibe
+      flickerChance: 0.012, // per frame-ish
+      _flickerT: 0
+    };
+
+    function randBetween(a, b){ return a + Math.random() * (b - a); }
+
     window.addEventListener("mousemove", (e) => {
       m3.x = (e.clientX / window.innerWidth) * 2 - 1;
       m3.y = (e.clientY / window.innerHeight) * 2 - 1;
@@ -728,6 +768,42 @@
         const targetX = m3.y * 0.25;
         head.rotation.y = lerp(head.rotation.y, targetY, 0.08);
         head.rotation.x = lerp(head.rotation.x, targetX, 0.08);
+        // eyes: slightly independent from head, with lag + micro-saccades
+        if (eyeRig && eyeL && eyeR){
+          const now = performance.now();
+
+          if (now > eyeState._nextSaccade){
+            eyeState._nextSaccade = now + eyeState.saccadeEvery + Math.random() * 260;
+            eyeState._sx = randBetween(-1, 1);
+            eyeState._sy = randBetween(-1, 1);
+          }
+
+          const targetYaw = (m3.x * eyeState.maxYaw) + eyeState._sx * eyeState.saccadeAmp;
+          const targetPitch = (-m3.y * eyeState.maxPitch) + eyeState._sy * eyeState.saccadeAmp;
+
+          eyeRig.rotation.y = lerp(eyeRig.rotation.y, targetYaw, eyeState.follow);
+          eyeRig.rotation.x = lerp(eyeRig.rotation.x, targetPitch, eyeState.follow);
+
+          // tiny asymmetric "attention" — not perfectly mirrored
+          eyeL.position.y = lerp(eyeL.position.y, eyeState._sy * 0.004, 0.08);
+          eyeR.position.y = lerp(eyeR.position.y, -eyeState._sy * 0.003, 0.08);
+
+          // flicker / scan pulse
+          if (Math.random() < eyeState.flickerChance){
+            eyeState._flickerT = now + 90 + Math.random() * 140;
+          }
+          const hot = now < eyeState._flickerT;
+          const pulse = 0.78 + 0.22 * Math.sin(t * 6.5);
+          const op = (hot ? 1.0 : 0.86) * pulse;
+
+          eyeL.material.opacity = op;
+          eyeR.material.opacity = op;
+
+          const s = (hot ? 1.08 : 1.0);
+          eyeL.scale.set(0.035 * s, 0.035 * s, 0.035 * s);
+          eyeR.scale.set(0.035 * s, 0.035 * s, 0.035 * s);
+        }
+
       }
 
       renderer.render(scene, camera);
