@@ -250,16 +250,35 @@
     }
 
     function makeEyeDot() {
+      const size = 96;
+      const c = document.createElement("canvas");
+      c.width = c.height = size;
+      const ctx = c.getContext("2d");
+
+      const g = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+      g.addColorStop(0.00, "rgba(255,40,40,1.00)");
+      g.addColorStop(0.12, "rgba(255,20,20,0.95)");
+      g.addColorStop(0.28, "rgba(255,0,0,0.55)");
+      g.addColorStop(0.55, "rgba(255,0,0,0.16)");
+      g.addColorStop(1.00, "rgba(255,0,0,0.00)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, size, size);
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+
       const mat = new THREE.SpriteMaterial({
-        color: 0xff0000,
+        map: tex,
+        color: 0xffffff,
         transparent: true,
-        opacity: 0.95,
+        opacity: 1.0,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
         depthTest: true
       });
+
       const s = new THREE.Sprite(mat);
-      s.scale.set(0.07, 0.07, 0.07);
+      s.scale.set(0.045, 0.045, 0.045);
       s.renderOrder = 999;
       return s;
     }
@@ -669,9 +688,8 @@
       eyeL = makeEyeDot();
       eyeR = makeEyeDot();
 
-      // tweak these two lines to fit your GLB eye sockets
-      eyeL.position.set(-0.12, 0.06, 0.22);
-      eyeR.position.set( 0.12, 0.06, 0.22);
+      eyeL.position.set(-0.085, 0.055, 0.195);
+      eyeR.position.set( 0.085, 0.055, 0.195);
 
       head.add(eyeL);
       head.add(eyeR);
