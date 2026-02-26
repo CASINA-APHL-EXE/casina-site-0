@@ -701,11 +701,11 @@
       // Face-ish anchor: slightly above center, slightly forward.
       eyeRig.position.set(
         center.x,
-        center.y + size.y * 0.02,
+        center.y + size.y * 0.001,
         center.z + size.z * 0.28
       );
 
-      const eyeSep = size.x * 0.10;  // distance between eyes
+      const eyeSep = size.x * 0.20;  // distance between eyes
       eyeL.position.set(-eyeSep * 0.5, 0, 0);
       eyeR.position.set( eyeSep * 0.5, 0, 0);
 
