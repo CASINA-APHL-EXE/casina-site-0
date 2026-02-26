@@ -801,12 +801,14 @@
 
           const op = (hot ? 1.0 : base) * pulse;
 
-          eyeL.material.opacity = op;
-          eyeR.material.opacity = op;
+          const globalAlpha = 0.55;
+
+          eyeL.material.opacity = op * globalAlpha;
+          eyeR.material.opacity = op * globalAlpha;
 
           const s = (hot ? 1.08 : 1.0);
-          eyeL.scale.set(0.025 * s, 0.025 * s, 0.025 * s);
-          eyeR.scale.set(0.025 * s, 0.025 * s, 0.025 * s);
+          eyeL.scale.set(0.04 * s, 0.04 * s, 0.04 * s);
+          eyeR.scale.set(0.04 * s, 0.04 * s, 0.04 * s);
         }
 
       }
