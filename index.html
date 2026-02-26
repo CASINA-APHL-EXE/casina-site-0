@@ -133,7 +133,7 @@
       #portalUI .hex:nth-child(5) { left: 82%; top: 66%; }
     }
 
-    /* ===== Insane Manifesto Anchor (new) ===== */
+    /* ===== Insane Manifesto Anchor ===== */
     #manifesto {
       position: fixed;
       left: 50%;
@@ -249,7 +249,22 @@
       }
     }
 
-    // ===== Insane Manifesto System (new) =====
+    function makeEyeDot() {
+      const mat = new THREE.SpriteMaterial({
+        color: 0xff0000,
+        transparent: true,
+        opacity: 0.95,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        depthTest: true
+      });
+      const s = new THREE.Sprite(mat);
+      s.scale.set(0.07, 0.07, 0.07);
+      s.renderOrder = 999;
+      return s;
+    }
+
+    // ===== Insane Manifesto System =====
     const manifestoEl = document.getElementById("manifesto");
 
     const MANIFESTO_LINES = [
@@ -332,7 +347,7 @@
       });
     });
 
-    // ===== Particles (unchanged parameters) =====
+    // ===== Particles =====
     const pCanvas = document.getElementById("particlesCanvas");
     const pCtx = pCanvas.getContext("2d");
 
@@ -607,7 +622,7 @@
 
     tickParticles();
 
-    // ===== Three.js (unchanged numbers) =====
+    // ===== Three.js =====
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
@@ -625,6 +640,8 @@
     scene.add(key);
 
     let head = null;
+    let eyeL = null;
+    let eyeR = null;
 
     const loader = new GLTFLoader();
     loader.load("/head.glb", (gltf) => {
@@ -648,6 +665,16 @@
         wireOpacity: 0.18,
         edgeOpacity: 0.55
       });
+
+      eyeL = makeEyeDot();
+      eyeR = makeEyeDot();
+
+      // tweak these two lines to fit your GLB eye sockets
+      eyeL.position.set(-0.12, 0.06, 0.22);
+      eyeR.position.set( 0.12, 0.06, 0.22);
+
+      head.add(eyeL);
+      head.add(eyeR);
 
       scene.add(head);
       console.log("GLB LOADED + HOLO");
