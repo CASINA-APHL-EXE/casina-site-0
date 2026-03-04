@@ -6,420 +6,455 @@
 <title>VISUAL — CASINA</title>
 
 <style>
+
 :root{
-  --c: rgba(0,255,255,.85);
-  --bg:#000;
+--c: rgba(0,255,255,.85);
+--bg:#000;
 
-  --fs-1: clamp(12px,1.05vw,16px);
-  --fs-2: clamp(16px,1.45vw,22px);
-  --ls-1: clamp(1px,.25vw,4px);
+--fs-1: clamp(12px,1.05vw,16px);
+--fs-2: clamp(16px,1.45vw,22px);
+--ls-1: clamp(1px,.25vw,4px);
 
-  --pad: clamp(14px,2vw,24px);
-  --radius: 10px;          /* sharper */
-  --stroke: rgba(0,255,255,.20);
-  --panel: rgba(0,255,255,.05);
+--pad: clamp(14px,2vw,24px);
+--radius:8px;
+--stroke:rgba(0,255,255,.20);
+--panel:rgba(0,255,255,.05);
 }
 
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--c);font-family:monospace}
+
 body{
-  min-height:100svh;min-height:100dvh;
-  opacity:1;
-  transition:opacity .6s ease,filter .6s ease;
-  overflow-x:hidden;
+min-height:100svh;
+opacity:1;
+transition:opacity .6s ease,filter .6s ease;
+overflow-x:hidden;
 }
+
 body.is-entering{opacity:0;filter:blur(2px)}
 html.is-transitioning body{opacity:0;filter:blur(2px)}
 
 .safe{
-  padding:
-    calc(var(--pad) + env(safe-area-inset-top))
-    calc(var(--pad) + env(safe-area-inset-right))
-    calc(var(--pad) + env(safe-area-inset-bottom))
-    calc(var(--pad) + env(safe-area-inset-left));
+padding:
+calc(var(--pad) + env(safe-area-inset-top))
+calc(var(--pad) + env(safe-area-inset-right))
+calc(var(--pad) + env(safe-area-inset-bottom))
+calc(var(--pad) + env(safe-area-inset-left));
 }
 
-/* top bar */
+/* topbar */
+
 .topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  flex-wrap:wrap;
-  gap:10px;
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+flex-wrap:wrap;
+gap:10px;
 }
+
 .title{
-  font-size:var(--fs-2);
-  letter-spacing:var(--ls-1);
-  opacity:.85;
+font-size:var(--fs-2);
+letter-spacing:var(--ls-1);
+opacity:.85;
 }
+
 .btn{
-  text-decoration:none;
-  color:var(--c);
-  border:1px solid rgba(0,255,255,.25);
-  background: rgba(0,255,255,.04);
-  padding:10px 14px;
-  border-radius:14px;
-  font-size:var(--fs-1);
-  letter-spacing:var(--ls-1);
-  opacity:.8;
-  white-space:nowrap;
+text-decoration:none;
+color:var(--c);
+border:1px solid rgba(0,255,255,.25);
+background:rgba(0,255,255,.04);
+padding:10px 14px;
+border-radius:14px;
+font-size:var(--fs-1);
+letter-spacing:var(--ls-1);
+opacity:.8;
+white-space:nowrap;
 }
+
 .btn:hover{opacity:1}
 
-/* ===== Desktop Grid (4 columns) ===== */
+/* GRID */
+
 .grid{
-  margin-top:30px;
-  display:grid;
-  gap:18px;
-  grid-template-columns: repeat(4, minmax(0, 1fr)); /* force 4 on desktop */
-  align-items:start;
+margin-top:30px;
+display:grid;
+gap:18px;
+grid-template-columns:repeat(4,1fr);
 }
 
-/* fallback when screen too narrow */
-@media (max-width: 1200px){
-  .grid{ grid-template-columns: repeat(3, minmax(0,1fr)); }
-}
-@media (max-width: 900px){
-  .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+/* responsive grid */
+
+@media (max-width:1200px){
+.grid{grid-template-columns:repeat(3,1fr)}
 }
 
-/* ===== Mobile Shorts Feed ===== */
-@media (max-width: 720px){
-  .grid{
-    grid-template-columns: 1fr;
-    gap: 14px;
-    margin-top: 18px;
-
-    /* shorts-like snap */
-    max-height: calc(100svh - 90px);
-    overflow-y: auto;
-    scroll-snap-type: y mandatory;
-    padding-bottom: 10px;
-  }
+@media (max-width:900px){
+.grid{grid-template-columns:repeat(2,1fr)}
 }
 
-/* card */
+/* mobile shorts mode */
+
+@media (max-width:720px){
+
+.grid{
+grid-template-columns:1fr;
+max-height:calc(100svh - 90px);
+overflow-y:auto;
+scroll-snap-type:y mandatory;
+}
+
 .card{
-  position:relative;
-  overflow:hidden;
-  cursor:pointer;
+scroll-snap-align:start;
+min-height:calc(100svh - 110px);
+aspect-ratio:auto;
+}
 
-  background:var(--panel);
-  border:1px solid var(--stroke);
+}
 
-  /* vertical video-friendly */
-  aspect-ratio: 9 / 16;
+/* CARD */
 
-  /* sharper corners */
-  border-radius: var(--radius);
-  /* small bevel feel */
-  clip-path: polygon(0 0, 100% 0, 100% 96%, 96% 100%, 0 100%);
+.card{
+position:relative;
+overflow:hidden;
+cursor:pointer;
 
-  transition: transform .20s ease, box-shadow .20s ease, opacity .20s ease;
-  opacity:.9;
+background:var(--panel);
+border:1px solid var(--stroke);
+
+aspect-ratio:9/16;
+
+border-radius:var(--radius);
+
+/* sharper cyber corner */
+
+clip-path:polygon(0 0,100% 0,100% 95%,95% 100%,0 100%);
+
+transition:.2s;
+
+opacity:.9;
 }
 
 .card:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 0 26px rgba(0,255,255,.10);
-  opacity:1;
+transform:translateY(-2px);
+box-shadow:0 0 26px rgba(0,255,255,.1);
+opacity:1;
 }
 
-@media (max-width: 720px){
-  .card{
-    scroll-snap-align: start;
-    /* make each card feel like a "screen" */
-    min-height: calc(100svh - 110px);
-    aspect-ratio: auto;
-  }
-  .card:hover{ transform:none; } /* no hover on mobile */
-}
+/* VIDEO */
 
-/* video fills */
 .card video{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit: cover;
-  display:block;
+position:absolute;
+inset:0;
+width:100%;
+height:100%;
+object-fit:cover;
+display:block;
 
-  /* slight “gallery” grade */
-  opacity:.90;
-  filter: saturate(1.05) contrast(1.02);
-  transform: scale(1.02);
-  transition: opacity .20s ease, transform .20s ease;
-  pointer-events:none;
+opacity:.9;
+transform:scale(1.02);
+
+transition:.2s;
+pointer-events:none;
 }
+
 .card:hover video{
-  opacity:1;
-  transform: scale(1.04);
+opacity:1;
+transform:scale(1.05);
 }
 
-/* overlays */
+/* overlay */
+
 .overlay{
-  position:absolute; inset:0;
-  background:
-    linear-gradient(to top, rgba(0,0,0,.70), rgba(0,0,0,.08) 55%, rgba(0,0,0,0));
-  pointer-events:none;
+position:absolute;
+inset:0;
+background:
+linear-gradient(to top,
+rgba(0,0,0,.7),
+rgba(0,0,0,.05) 55%,
+rgba(0,0,0,0));
 }
+
+/* metadata */
 
 .meta{
-  position:absolute;
-  left:12px;
-  bottom:12px;
-  right:12px;
-  z-index:2;
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:10px;
+position:absolute;
+left:12px;
+bottom:12px;
+right:12px;
+
+display:flex;
+justify-content:space-between;
+align-items:flex-end;
 }
+
 .txt{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
+display:flex;
+flex-direction:column;
+gap:4px;
 }
+
 .name{
-  font-size:var(--fs-1);
-  letter-spacing:var(--ls-1);
-  opacity:.95;
+font-size:var(--fs-1);
+letter-spacing:var(--ls-1);
 }
+
 .desc{
-  font-size:var(--fs-1);
-  letter-spacing:var(--ls-1);
-  opacity:.55;
-  line-height:1.35;
+font-size:var(--fs-1);
+opacity:.5;
 }
 
-/* play badge */
 .pill{
-  border:1px solid rgba(0,255,255,.18);
-  background:rgba(0,0,0,.25);
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:var(--fs-1);
-  letter-spacing:var(--ls-1);
-  opacity:.70;
-  white-space:nowrap;
+border:1px solid rgba(0,255,255,.2);
+background:rgba(0,0,0,.35);
+padding:6px 10px;
+border-radius:999px;
+font-size:var(--fs-1);
 }
 
-/* click hint */
-.hint{
-  margin-top:10px;
-  font-size:var(--fs-1);
-  letter-spacing:var(--ls-1);
-  opacity:.32;
-  max-width: 70ch;
+/* controls */
+
+.controls{
+position:absolute;
+top:10px;
+left:10px;
+display:flex;
+gap:6px;
+z-index:2;
 }
+
+.ctrl{
+border:1px solid rgba(0,255,255,.2);
+background:rgba(0,0,0,.45);
+padding:6px 10px;
+border-radius:999px;
+font-size:var(--fs-1);
+cursor:pointer;
+}
+
+.ctrl:hover{opacity:1}
+
 </style>
 </head>
 
 <body>
+
 <div class="safe">
 
-  <div class="topbar">
-    <div class="title">VISUAL MODULE</div>
-    <a class="btn" href="/">HOME</a>
-  </div>
+<div class="topbar">
+<div class="title">VISUAL MODULE</div>
+<a class="btn" href="/">HOME</a>
+</div>
 
-  <div class="hint">
-    Desktop: hover = preview · click = play/pause · space = play/pause (focused) <br/>
-    Mobile: scroll-snap feed · auto-plays the one in view · tap = play/pause
-  </div>
+<section class="grid">
 
-  <section class="grid" id="grid">
+<!-- VIDEO CARD -->
 
-    <!-- Add as many as you want; keep data-src path -->
-    <div class="card" tabindex="0"
-         data-title="ARTIFACT 01"
-         data-src="/assets/videos/artifact01.mp4">
-      <video muted playsinline preload="metadata" loop></video>
-      <div class="overlay"></div>
-      <div class="meta">
-        <div class="txt">
-          <div class="name">ARTIFACT 01</div>
-          <div class="desc">9:16 · MP4 · AE fragment</div>
-        </div>
-        <div class="pill" data-pill>PLAY</div>
-      </div>
-    </div>
+<div class="card" data-src="/assets/videos/artifact01.mp4">
 
-    <div class="card" tabindex="0" data-title="ARTIFACT 02" data-src="">
-      <div class="overlay"></div>
-      <div class="meta">
-        <div class="txt">
-          <div class="name">ARTIFACT 02</div>
-          <div class="desc">placeholder</div>
-        </div>
-        <div class="pill">LOCK</div>
-      </div>
-    </div>
+<video muted loop playsinline preload="metadata"></video>
 
-    <div class="card" tabindex="0" data-title="ARTIFACT 03" data-src="">
-      <div class="overlay"></div>
-      <div class="meta">
-        <div class="txt">
-          <div class="name">ARTIFACT 03</div>
-          <div class="desc">placeholder</div>
-        </div>
-        <div class="pill">LOCK</div>
-      </div>
-    </div>
+<div class="controls">
 
-    <div class="card" tabindex="0" data-title="ARTIFACT 04" data-src="">
-      <div class="overlay"></div>
-      <div class="meta">
-        <div class="txt">
-          <div class="name">ARTIFACT 04</div>
-          <div class="desc">placeholder</div>
-        </div>
-        <div class="pill">LOCK</div>
-      </div>
-    </div>
+<div class="ctrl" data-act="play">PLAY</div>
+<div class="ctrl" data-act="mute">UNMUTE</div>
 
-  </section>
+</div>
+
+<div class="overlay"></div>
+
+<div class="meta">
+<div class="txt">
+<div class="name">ARTIFACT 01</div>
+<div class="desc">720x1280 · AE fragment</div>
+</div>
+<div class="pill">VIDEO</div>
+</div>
+
+</div>
+
+</section>
+
 </div>
 
 <script>
-/* transitions + bfcache */
+
+/* page transition */
+
 document.body.classList.add("is-entering");
-requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.remove("is-entering")));
+
+requestAnimationFrame(()=>requestAnimationFrame(()=>{
+
+document.body.classList.remove("is-entering");
+
+}));
+
 window.addEventListener("pageshow",()=>{
-  document.documentElement.classList.remove("is-transitioning");
-  document.body.classList.remove("is-entering");
+document.documentElement.classList.remove("is-transitioning");
 });
 
-/* smooth nav home */
+/* smooth home nav */
+
 document.querySelectorAll('a[href="/"]').forEach(a=>{
-  a.addEventListener("click",(e)=>{
-    e.preventDefault();
-    document.documentElement.classList.add("is-transitioning");
-    setTimeout(()=>location.href="/",500);
-  });
+a.addEventListener("click",(e)=>{
+e.preventDefault();
+document.documentElement.classList.add("is-transitioning");
+setTimeout(()=>location.href="/",500);
+});
 });
 
-const cards = [...document.querySelectorAll(".card")];
+const cards=[...document.querySelectorAll(".card")];
 
-function getVideo(card){ return card.querySelector("video"); }
-function setPill(card, text){
-  const pill = card.querySelector("[data-pill]");
-  if(pill) pill.textContent = text;
+function pauseAll(except){
+
+cards.forEach(c=>{
+
+if(c===except)return;
+
+const v=c.querySelector("video");
+v.pause();
+
+c.dataset.playing="0";
+
+});
+
 }
 
-function pauseAll(except=null){
-  cards.forEach(c=>{
-    const v = getVideo(c);
-    if(!v) return;
-    if(except && c === except) return;
-    v.pause();
-    setPill(c, "PLAY");
-    c.dataset.playing = "0";
-  });
+async function playCard(card,fullscreen){
+
+const v=card.querySelector("video");
+
+pauseAll(card);
+
+v.muted=false;
+
+if(fullscreen){
+
+if(v.webkitEnterFullscreen)
+v.webkitEnterFullscreen();
+
+else if(v.requestFullscreen)
+await v.requestFullscreen();
+
 }
 
-function togglePlay(card){
-  const src = card.dataset.src || "";
-  const v = getVideo(card);
-  if(!src || !v) return;
+await v.play().catch(()=>{});
 
-  if(!v.src) v.src = src;
+card.dataset.playing="1";
 
-  // toggle
-  if(v.paused){
-    pauseAll(card);
-    v.muted = true;       // keep UX safe (autoplay policy + polite)
-    v.play().catch(()=>{});
-    setPill(card, "PAUSE");
-    card.dataset.playing = "1";
-  }else{
-    v.pause();
-    setPill(card, "PLAY");
-    card.dataset.playing = "0";
-  }
 }
 
-/* Bind: attach src + hover preview (desktop) + click toggle */
+function pauseCard(card){
+
+const v=card.querySelector("video");
+
+v.pause();
+
+card.dataset.playing="0";
+
+}
+
 cards.forEach(card=>{
-  const src = card.dataset.src || "";
-  const v = getVideo(card);
 
-  if(v && src){
-    // lazy assign: keep initial light, but still allow hover/IO to start
-    v.src = src;
-    v.muted = true;
-    v.loop = true;
-    v.playsInline = true;
-  }
+const src=card.dataset.src;
+const v=card.querySelector("video");
 
-  // desktop hover preview
-  card.addEventListener("mouseenter", ()=>{
-    // only do hover preview on devices that actually hover
-    if(!window.matchMedia("(hover:hover)").matches) return;
-    if(!v || !src) return;
-    // don't fight with "playing" state
-    if(card.dataset.playing === "1") return;
-    v.play().catch(()=>{});
-  });
-  card.addEventListener("mouseleave", ()=>{
-    if(!window.matchMedia("(hover:hover)").matches) return;
-    if(!v || !src) return;
-    if(card.dataset.playing === "1") return;
-    v.pause();
-  });
+v.src=src;
 
-  // click/tap play/pause (shorts-style)
-  card.addEventListener("click", ()=> togglePlay(card));
+/* hover preview desktop */
 
-  // keyboard (space/enter)
-  card.addEventListener("keydown",(e)=>{
-    if(e.key === "Enter" || e.key === " "){
-      e.preventDefault();
-      togglePlay(card);
-    }
-  });
-});
+card.addEventListener("mouseenter",()=>{
 
-/* Mobile: auto-play the card most in view (shorts feed) */
-const isMobileFeed = () => window.matchMedia("(max-width: 720px)").matches;
+if(window.matchMedia("(hover:hover)").matches){
 
-let io = null;
-function setupObserver(){
-  if(io) io.disconnect();
+v.muted=true;
+v.play().catch(()=>{});
 
-  // only enable auto-play on mobile layout
-  if(!isMobileFeed()) return;
-
-  io = new IntersectionObserver((entries)=>{
-    // pick the most visible playable entry
-    const visible = entries
-      .filter(e=>e.isIntersecting)
-      .sort((a,b)=> (b.intersectionRatio - a.intersectionRatio));
-
-    if(visible.length === 0) return;
-
-    const top = visible[0].target;
-    const src = top.dataset.src || "";
-    const v = getVideo(top);
-    if(!src || !v) return;
-
-    // autoplay current, pause others
-    pauseAll(top);
-    v.muted = true;
-    v.play().catch(()=>{});
-    setPill(top, "PAUSE");
-    top.dataset.playing = "1";
-  }, { threshold: [0.55, 0.75, 0.9] });
-
-  cards.forEach(c=>{
-    const src = c.dataset.src || "";
-    const v = getVideo(c);
-    if(src && v) io.observe(c);
-  });
 }
 
-setupObserver();
-window.addEventListener("resize", setupObserver);
+});
+
+card.addEventListener("mouseleave",()=>{
+
+if(window.matchMedia("(hover:hover)").matches){
+
+if(card.dataset.playing!=="1")
+v.pause();
+
+}
+
+});
+
+/* click card */
+
+card.addEventListener("click",()=>{
+
+if(card.dataset.playing==="1")
+pauseCard(card);
+else
+playCard(card,window.innerWidth<720);
+
+});
+
+/* buttons */
+
+card.querySelectorAll(".ctrl").forEach(btn=>{
+
+btn.addEventListener("click",e=>{
+
+e.stopPropagation();
+
+const act=btn.dataset.act;
+
+if(act==="play"){
+
+if(card.dataset.playing==="1")
+pauseCard(card);
+else
+playCard(card,true);
+
+}
+
+if(act==="mute"){
+
+v.muted=!v.muted;
+
+btn.textContent=v.muted?"UNMUTE":"MUTE";
+
+}
+
+});
+
+});
+
+});
+
+/* mobile scroll autoplay preview */
+
+const observer=new IntersectionObserver(entries=>{
+
+entries.forEach(e=>{
+
+if(e.isIntersecting){
+
+const card=e.target;
+const v=card.querySelector("video");
+
+if(window.innerWidth<720){
+
+v.muted=true;
+v.play().catch(()=>{});
+
+}
+
+}
+
+});
+
+},{threshold:.6});
+
+cards.forEach(c=>observer.observe(c));
+
 </script>
+
 </body>
 </html>
