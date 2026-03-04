@@ -6,417 +6,349 @@
 <title>VISUAL — CASINA</title>
 
 <style>
-
 :root{
---c: rgba(0,255,255,.85);
---bg:#000;
+  --c: rgba(0,255,255,.85);
+  --bg:#000;
 
---fs-1: clamp(12px,1.05vw,16px);
---fs-2: clamp(16px,1.45vw,22px);
---ls-1: clamp(1px,.25vw,4px);
+  --fs-1: clamp(12px,1.05vw,16px);
+  --fs-2: clamp(16px,1.45vw,22px);
+  --ls-1: clamp(1px,.25vw,4px);
 
---pad: clamp(14px,2vw,24px);
---radius:8px;
---stroke:rgba(0,255,255,.20);
---panel:rgba(0,255,255,.05);
+  --pad: clamp(14px,2vw,24px);
+  --radius:8px;
+  --stroke:rgba(0,255,255,.20);
+  --panel:rgba(0,255,255,.05);
 }
 
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--c);font-family:monospace}
-
 body{
-min-height:100svh;
-opacity:1;
-transition:opacity .6s ease,filter .6s ease;
-overflow-x:hidden;
+  min-height:100svh;
+  opacity:1;
+  transition:opacity .6s ease,filter .6s ease;
+  overflow-x:hidden;
 }
-
 body.is-entering{opacity:0;filter:blur(2px)}
 html.is-transitioning body{opacity:0;filter:blur(2px)}
 
 .safe{
-padding:
-calc(var(--pad) + env(safe-area-inset-top))
-calc(var(--pad) + env(safe-area-inset-right))
-calc(var(--pad) + env(safe-area-inset-bottom))
-calc(var(--pad) + env(safe-area-inset-left));
+  padding:
+    calc(var(--pad) + env(safe-area-inset-top))
+    calc(var(--pad) + env(safe-area-inset-right))
+    calc(var(--pad) + env(safe-area-inset-bottom))
+    calc(var(--pad) + env(safe-area-inset-left));
 }
-
-/* topbar */
 
 .topbar{
-display:flex;
-justify-content:space-between;
-align-items:flex-start;
-flex-wrap:wrap;
-gap:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  gap:10px;
 }
-
 .title{
-font-size:var(--fs-2);
-letter-spacing:var(--ls-1);
-opacity:.85;
+  font-size:var(--fs-2);
+  letter-spacing:var(--ls-1);
+  opacity:.85;
 }
-
 .btn{
-text-decoration:none;
-color:var(--c);
-border:1px solid rgba(0,255,255,.25);
-background:rgba(0,255,255,.04);
-padding:10px 14px;
-border-radius:14px;
-font-size:var(--fs-1);
-letter-spacing:var(--ls-1);
-opacity:.8;
-white-space:nowrap;
+  text-decoration:none;
+  color:var(--c);
+  border:1px solid rgba(0,255,255,.25);
+  background:rgba(0,255,255,.04);
+  padding:10px 14px;
+  border-radius:14px;
+  font-size:var(--fs-1);
+  letter-spacing:var(--ls-1);
+  opacity:.8;
+  white-space:nowrap;
 }
-
 .btn:hover{opacity:1}
 
-/* GRID */
-
 .grid{
-margin-top:30px;
-display:grid;
-gap:18px;
-grid-template-columns:repeat(4,1fr);
+  margin-top:30px;
+  display:grid;
+  gap:18px;
+  grid-template-columns:repeat(4,1fr);
 }
-
-/* responsive grid */
-
 @media (max-width:1200px){
-.grid{grid-template-columns:repeat(3,1fr)}
+  .grid{grid-template-columns:repeat(3,1fr)}
 }
-
 @media (max-width:900px){
-.grid{grid-template-columns:repeat(2,1fr)}
+  .grid{grid-template-columns:repeat(2,1fr)}
 }
-
-/* mobile shorts mode */
 
 @media (max-width:720px){
-
-.grid{
-grid-template-columns:1fr;
-max-height:calc(100svh - 90px);
-overflow-y:auto;
-scroll-snap-type:y mandatory;
+  .grid{
+    grid-template-columns:1fr;
+    max-height:calc(100svh - 90px);
+    overflow-y:auto;
+    scroll-snap-type:y mandatory;
+  }
+  .card{
+    scroll-snap-align:start;
+    min-height:calc(100svh - 110px);
+    aspect-ratio:auto;
+  }
 }
 
 .card{
-scroll-snap-align:start;
-min-height:calc(100svh - 110px);
-aspect-ratio:auto;
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+
+  background:var(--panel);
+  border:1px solid var(--stroke);
+
+  aspect-ratio:9/16;
+  border-radius:var(--radius);
+
+  clip-path:polygon(0 0,100% 0,100% 95%,95% 100%,0 100%);
+  transition:.2s;
+  opacity:.9;
 }
-
-}
-
-/* CARD */
-
-.card{
-position:relative;
-overflow:hidden;
-cursor:pointer;
-
-background:var(--panel);
-border:1px solid var(--stroke);
-
-aspect-ratio:9/16;
-
-border-radius:var(--radius);
-
-/* sharper cyber corner */
-
-clip-path:polygon(0 0,100% 0,100% 95%,95% 100%,0 100%);
-
-transition:.2s;
-
-opacity:.9;
-}
-
 .card:hover{
-transform:translateY(-2px);
-box-shadow:0 0 26px rgba(0,255,255,.1);
-opacity:1;
+  transform:translateY(-2px);
+  box-shadow:0 0 26px rgba(0,255,255,.1);
+  opacity:1;
 }
-
-/* VIDEO */
 
 .card video{
-position:absolute;
-inset:0;
-width:100%;
-height:100%;
-object-fit:cover;
-display:block;
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
 
-opacity:.9;
-transform:scale(1.02);
+  opacity:.9;
+  transform:scale(1.02);
+  transition:.2s;
 
-transition:.2s;
-pointer-events:none;
+  /* important: allow clicking badges overlay without video eating clicks */
+  pointer-events:none;
 }
-
 .card:hover video{
-opacity:1;
-transform:scale(1.05);
+  opacity:1;
+  transform:scale(1.05);
 }
-
-/* overlay */
 
 .overlay{
-position:absolute;
-inset:0;
-background:
-linear-gradient(to top,
-rgba(0,0,0,.7),
-rgba(0,0,0,.05) 55%,
-rgba(0,0,0,0));
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,.7), rgba(0,0,0,.05) 55%, rgba(0,0,0,0));
 }
 
-/* metadata */
-
 .meta{
-position:absolute;
-left:12px;
-bottom:12px;
-right:12px;
-
-display:flex;
-justify-content:space-between;
-align-items:flex-end;
+  position:absolute;
+  left:12px;
+  bottom:12px;
+  right:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:10px;
 }
 
 .txt{
-display:flex;
-flex-direction:column;
-gap:4px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
 }
-
 .name{
-font-size:var(--fs-1);
-letter-spacing:var(--ls-1);
+  font-size:var(--fs-1);
+  letter-spacing:var(--ls-1);
 }
-
 .desc{
-font-size:var(--fs-1);
-opacity:.5;
+  font-size:var(--fs-1);
+  opacity:.5;
 }
 
 .pill{
-border:1px solid rgba(0,255,255,.2);
-background:rgba(0,0,0,.35);
-padding:6px 10px;
-border-radius:999px;
-font-size:var(--fs-1);
+  border:1px solid rgba(0,255,255,.2);
+  background:rgba(0,0,0,.35);
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:var(--fs-1);
+  letter-spacing:var(--ls-1);
+  cursor:pointer;
+  user-select:none;
+  opacity:.9;
 }
+.pill:hover{opacity:1}
 
-/* controls */
-
-.controls{
-position:absolute;
-top:10px;
-left:10px;
-display:flex;
-gap:6px;
-z-index:2;
-}
-
-.ctrl{
-border:1px solid rgba(0,255,255,.2);
-background:rgba(0,0,0,.45);
-padding:6px 10px;
-border-radius:999px;
-font-size:var(--fs-1);
-cursor:pointer;
-}
-
-.ctrl:hover{opacity:1}
-
+/* fullscreen hint uses same pill style */
 </style>
 </head>
 
 <body>
-
 <div class="safe">
 
-<div class="topbar">
-<div class="title">VISUAL MODULE</div>
-<a class="btn" href="/">HOME</a>
-</div>
+  <div class="topbar">
+    <div class="title">VISUAL MODULE</div>
+    <a class="btn" href="/">HOME</a>
+  </div>
 
-<section class="grid">
+  <section class="grid">
 
-<!-- VIDEO CARD -->
+    <div class="card" data-src="/assets/videos/artifact01.mp4">
+      <video muted loop playsinline preload="metadata"></video>
+      <div class="overlay"></div>
 
-<div class="card" data-src="/assets/videos/artifact01.mp4">
+      <div class="meta">
+        <div class="txt">
+          <div class="name">ARTIFACT 01</div>
+          <div class="desc">720x1280 · AE fragment</div>
+        </div>
 
-<video muted loop playsinline preload="metadata"></video>
+        <!-- click this to fullscreen + controls + sound -->
+        <div class="pill" data-full>FULL</div>
+      </div>
+    </div>
 
-<div class="overlay"></div>
-
-<div class="meta">
-<div class="txt">
-<div class="name">ARTIFACT 01</div>
-<div class="desc">720x1280 · AE fragment</div>
-</div>
-<div class="pill">VIDEO</div>
-</div>
-
-</div>
-
-</section>
+    <!-- add more cards later -->
+  </section>
 
 </div>
 
 <script>
-
-/* page transition */
-
 document.body.classList.add("is-entering");
-
-requestAnimationFrame(()=>requestAnimationFrame(()=>{
-
-document.body.classList.remove("is-entering");
-
-}));
-
-window.addEventListener("pageshow",()=>{
-document.documentElement.classList.remove("is-transitioning");
-});
-
-/* smooth home nav */
-
+requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.remove("is-entering")));
+window.addEventListener("pageshow",()=>document.documentElement.classList.remove("is-transitioning"));
 document.querySelectorAll('a[href="/"]').forEach(a=>{
-a.addEventListener("click",(e)=>{
-e.preventDefault();
-document.documentElement.classList.add("is-transitioning");
-setTimeout(()=>location.href="/",500);
-});
+  a.addEventListener("click",(e)=>{
+    e.preventDefault();
+    document.documentElement.classList.add("is-transitioning");
+    setTimeout(()=>location.href="/",500);
+  });
 });
 
-const cards=[...document.querySelectorAll(".card")];
+const cards = [...document.querySelectorAll(".card")];
 
 function pauseAll(except){
   cards.forEach(c=>{
     if(c===except) return;
-
-    const v=c.querySelector("video");
+    const v = c.querySelector("video");
     v.pause();
-
-    c.dataset.playing="0";
+    c.dataset.playing = "0";
   });
 }
 
-async function playCard(card,fullscreen){
+function isMobile(){
+  return window.innerWidth < 720;
+}
 
-  const v=card.querySelector("video");
+async function requestFullscreen(video){
+  if(video.webkitEnterFullscreen){
+    video.webkitEnterFullscreen(); // iOS
+    return;
+  }
+  if(video.requestFullscreen){
+    await video.requestFullscreen();
+  }
+}
+
+async function playCard(card, { fullscreen=false, withSound=true, showControls=false } = {}){
+  const v = card.querySelector("video");
+  const src = card.dataset.src || "";
+  if(!src) return;
+
+  if(!v.src) v.src = src;
 
   pauseAll(card);
 
-  v.muted=false;
+  v.controls = !!showControls;
+  v.muted = !withSound;
 
   if(fullscreen){
-
-    if(v.webkitEnterFullscreen)
-      v.webkitEnterFullscreen();
-
-    else if(v.requestFullscreen)
-      await v.requestFullscreen();
-
+    try{ await requestFullscreen(v); }catch{}
   }
 
   await v.play().catch(()=>{});
-
-  card.dataset.playing="1";
+  card.dataset.playing = "1";
 }
 
 function pauseCard(card){
-
-  const v=card.querySelector("video");
-
+  const v = card.querySelector("video");
   v.pause();
-
-  card.dataset.playing="0";
+  card.dataset.playing = "0";
 }
 
 cards.forEach(card=>{
+  const src = card.dataset.src || "";
+  const v = card.querySelector("video");
 
-  const src=card.dataset.src;
-  const v=card.querySelector("video");
+  if(src) v.src = src;
+  v.loop = true;
+  v.playsInline = true;
+  v.muted = true;
+  v.controls = false;
 
-  v.src=src;
-
-  v.loop=true;
-  v.playsInline=true;
-  v.muted=true;
-
-  /* hover preview (desktop only) */
-
+  // Desktop hover preview only when not actively playing
   card.addEventListener("mouseenter",()=>{
-
     if(!window.matchMedia("(hover:hover)").matches) return;
-
-    if(card.dataset.playing==="1") return;
-
-    v.muted=true;
+    if(card.dataset.playing === "1") return;
+    v.muted = true;
+    v.controls = false;
     v.play().catch(()=>{});
-
   });
 
   card.addEventListener("mouseleave",()=>{
-
     if(!window.matchMedia("(hover:hover)").matches) return;
-
-    if(card.dataset.playing==="1") return;
-
+    if(card.dataset.playing === "1") return;
     v.pause();
-
   });
 
-  /* click interaction */
+  // Click card: desktop toggle play/pause (sound on), mobile go fullscreen + sound
+  card.addEventListener("click",(e)=>{
+    // if user clicked FULL pill, let that handler do its job
+    if(e.target && e.target.closest && e.target.closest("[data-full]")) return;
 
-  card.addEventListener("click",()=>{
-
-    if(card.dataset.playing==="1"){
-
+    if(card.dataset.playing === "1"){
       pauseCard(card);
-
     }else{
-
-      playCard(card,window.innerWidth<720);
-
+      if(isMobile()){
+        playCard(card, { fullscreen:true, withSound:true, showControls:true });
+      }else{
+        playCard(card, { fullscreen:false, withSound:true, showControls:false });
+      }
     }
-
   });
 
+  // FULL pill: always fullscreen + sound + controls
+  const full = card.querySelector("[data-full]");
+  if(full){
+    full.addEventListener("click",(e)=>{
+      e.stopPropagation();
+      playCard(card, { fullscreen:true, withSound:true, showControls:true });
+    });
+  }
 });
 
-/* mobile scroll preview */
+// Mobile scroll preview (muted, no controls)
+const observer = new IntersectionObserver(entries=>{
+  if(!isMobile()) return;
 
-const observer=new IntersectionObserver(entries=>{
+  // pick most visible intersecting entry
+  const visible = entries
+    .filter(e=>e.isIntersecting)
+    .sort((a,b)=> b.intersectionRatio - a.intersectionRatio);
 
-  entries.forEach(e=>{
+  if(visible.length === 0) return;
 
-    if(!e.isIntersecting) return;
+  const top = visible[0].target;
+  const v = top.querySelector("video");
 
-    const card=e.target;
-    const v=card.querySelector("video");
+  // only preview if not already actively playing via tap
+  if(top.dataset.playing === "1") return;
 
-    if(window.innerWidth<720){
-
-      v.muted=true;
-      v.play().catch(()=>{});
-
-    }
-
-  });
-
-},{threshold:.6});
+  pauseAll(top);
+  v.controls = false;
+  v.muted = true;
+  v.play().catch(()=>{});
+}, { threshold:[0.6,0.8,0.9] });
 
 cards.forEach(c=>observer.observe(c));
-
 </script>
-
 </body>
 </html>
