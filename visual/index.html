@@ -65,6 +65,7 @@ html.is-transitioning body{opacity:0;filter:blur(2px)}
 }
 .btn:hover{opacity:1}
 
+/* GRID */
 .grid{
   margin-top:30px;
   display:grid;
@@ -84,79 +85,90 @@ html.is-transitioning body{opacity:0;filter:blur(2px)}
   .card{
     scroll-snap-align:start;
     min-height:calc(100svh - 110px);
+  }
+}
+
+/* CARD (now: video area + footer, no overlay covering video) */
+.card{
+  border:1px solid var(--stroke);
+  background:var(--panel);
+  border-radius:var(--radius);
+  clip-path:polygon(0 0,100% 0,100% 95%,95% 100%,0 100%);
+  overflow:hidden;
+  opacity:.92;
+  transition:.2s;
+}
+.card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 0 26px rgba(0,255,255,.10);
+  opacity:1;
+}
+
+.videoBox{
+  position:relative;
+  /* make the window visually taller */
+  aspect-ratio: 9/16;
+  background:#000;
+  overflow:hidden;
+}
+@media (max-width:720px){
+  .videoBox{
+    /* for mobile feed: give more height */
+    height: calc(100svh - 190px);
     aspect-ratio:auto;
   }
 }
 
-.card{
-  position:relative;
-  overflow:hidden;
-  cursor:pointer;
-  background:var(--panel);
-  border:1px solid var(--stroke);
-  aspect-ratio:9/16;
-  border-radius:var(--radius);
-  clip-path:polygon(0 0,100% 0,100% 95%,95% 100%,0 100%);
-  transition:.2s;
-  opacity:.9;
-}
-.card:hover{
-  transform:translateY(-2px);
-  box-shadow:0 0 26px rgba(0,255,255,.1);
-  opacity:1;
-}
-
-.card video{
+.videoBox video{
   position:absolute;
   inset:0;
   width:100%;
   height:100%;
   object-fit:cover;
   display:block;
-  opacity:.9;
+  opacity:.92;
   transform:scale(1.02);
   transition:.2s;
 }
-.card:hover video{
+
+.card:hover .videoBox video{
   opacity:1;
   transform:scale(1.05);
 }
 
-.overlay{
-  position:absolute;
-  inset:0;
-  background:linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.06) 55%, rgba(0,0,0,0));
-  pointer-events:none;
-}
-
-.meta{
-  position:absolute;
-  left:12px;
-  bottom:12px;
-  right:12px;
+.cardFooter{
   display:flex;
   justify-content:space-between;
   align-items:flex-end;
-  gap:10px;
-  pointer-events:none;
+  gap:12px;
+  padding:12px 12px;
+  border-top:1px solid rgba(0,255,255,.12);
+  background:rgba(0,0,0,.18);
 }
 
 .txt{
   display:flex;
   flex-direction:column;
   gap:4px;
+  min-width:0;
 }
 .name{
   font-size:var(--fs-1);
   letter-spacing:var(--ls-1);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 .desc{
   font-size:var(--fs-1);
   opacity:.5;
+  letter-spacing:var(--ls-1);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
 .badge{
-  pointer-events:auto;
   border:1px solid rgba(0,255,255,.22);
   background:rgba(0,0,0,.35);
   padding:6px 10px;
@@ -173,7 +185,7 @@ html.is-transitioning body{opacity:0;filter:blur(2px)}
 }
 .badge:hover{opacity:1}
 
-/* Viewer (custom fullscreen) */
+/* VIEWER */
 .viewer{
   position:fixed;
   inset:0;
@@ -228,17 +240,17 @@ html.is-transitioning body{opacity:0;filter:blur(2px)}
   display:flex;
   align-items:center;
   justify-content:center;
-  padding: 20px;
+  padding: 18px;
 }
-
 @media (max-width:720px){
-  .viewerStage{ top:80px; padding: 14px; }
+  .viewerStage{ top:82px; padding: 12px; }
 }
 
+/* portrait-safe: keep full frame, black padding */
 .viewerVideo{
-  width: min(460px, 92vw);
-  height: auto;
+  width: min(520px, 94vw);
   max-height: calc(100svh - 140px);
+  height:auto;
   object-fit: contain;
   background:#000;
   border-radius: 14px;
@@ -257,21 +269,21 @@ html.is-transitioning body{opacity:0;filter:blur(2px)}
   </div>
 
   <section class="grid" id="grid">
-    <div class="card" data-title="ARTIFACT 01" data-src="/assets/videos/artifact01.mp4">
-      <video muted loop playsinline preload="metadata"></video>
-      <div class="overlay"></div>
-
-      <div class="meta">
+    <article class="card" data-title="ARTIFACT 01" data-src="/assets/videos/artifact01.mp4">
+      <div class="videoBox">
+        <video muted loop playsinline preload="metadata"></video>
+      </div>
+      <div class="cardFooter">
         <div class="txt">
           <div class="name">ARTIFACT 01</div>
           <div class="desc">720×1280 · AE fragment</div>
         </div>
         <div class="badge" data-open aria-label="Open viewer">⤢</div>
-        <!-- if you prefer text, replace ⤢ with VIDEO -->
+        <!-- If you prefer text: replace ⤢ with VIDEO -->
       </div>
-    </div>
+    </article>
 
-    <!-- duplicate card blocks for more artifacts -->
+    <!-- duplicate <article class="card"...> for more artifacts -->
   </section>
 </div>
 
@@ -280,7 +292,7 @@ html.is-transitioning body{opacity:0;filter:blur(2px)}
     <div class="viewerTitle" id="viewerTitle">ARTIFACT</div>
     <div class="viewerClose" id="viewerClose">×</div>
   </div>
-  <div class="viewerStage" id="viewerStage">
+  <div class="viewerStage">
     <video class="viewerVideo" id="viewerVideo" controls playsinline preload="metadata"></video>
   </div>
 </div>
@@ -288,12 +300,10 @@ html.is-transitioning body{opacity:0;filter:blur(2px)}
 <script>
 document.body.classList.add("is-entering");
 requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.remove("is-entering")));
-
 window.addEventListener("pageshow",()=>{
   document.documentElement.classList.remove("is-transitioning");
   document.body.classList.remove("is-entering");
 });
-
 document.querySelectorAll('a[href="/"]').forEach(a=>{
   a.addEventListener("click",(e)=>{
     e.preventDefault();
@@ -307,16 +317,14 @@ const viewer = document.getElementById("viewer");
 const viewerTitle = document.getElementById("viewerTitle");
 const viewerVideo = document.getElementById("viewerVideo");
 const viewerClose = document.getElementById("viewerClose");
-const viewerStage = document.getElementById("viewerStage");
 
 function isMobile(){ return window.innerWidth < 720; }
 
-function pauseAll(except=null){
+function pausePreviews(except=null){
   cards.forEach(c=>{
     if(except && c===except) return;
-    const v = c.querySelector("video");
-    if(v){ v.pause(); }
-    c.dataset.playing="0";
+    const v = c.querySelector(".videoBox video");
+    if(v) v.pause();
   });
 }
 
@@ -324,17 +332,22 @@ function openViewer(card){
   const src = card.dataset.src || "";
   if(!src) return;
 
-  const title = card.dataset.title || "ARTIFACT";
-  viewerTitle.textContent = title;
+  // hard-stop any preview FIRST => prevents intermediate "transition player" flash
+  pausePreviews();
 
+  viewerTitle.textContent = card.dataset.title || "ARTIFACT";
+
+  viewerVideo.pause();
   viewerVideo.src = src;
+  viewerVideo.currentTime = 0;
   viewerVideo.muted = false;
+
   viewer.classList.add("open");
 
-  pauseAll(card);
-
-  viewerVideo.currentTime = 0;
-  viewerVideo.play().catch(()=>{});
+  // play after overlay is visible (1 frame later)
+  requestAnimationFrame(()=>{
+    viewerVideo.play().catch(()=>{});
+  });
 }
 
 function closeViewer(){
@@ -345,58 +358,38 @@ function closeViewer(){
 }
 
 viewerClose.addEventListener("click", closeViewer);
-viewer.addEventListener("click",(e)=>{
-  if(e.target === viewer) closeViewer();
-});
-window.addEventListener("keydown",(e)=>{
-  if(e.key === "Escape" && viewer.classList.contains("open")) closeViewer();
-});
+viewer.addEventListener("click",(e)=>{ if(e.target === viewer) closeViewer(); });
+window.addEventListener("keydown",(e)=>{ if(e.key === "Escape" && viewer.classList.contains("open")) closeViewer(); });
 
 cards.forEach(card=>{
   const src = card.dataset.src || "";
-  const v = card.querySelector("video");
+  const v = card.querySelector(".videoBox video");
   if(src && v){
     v.src = src;
+    v.muted = true;
     v.loop = true;
     v.playsInline = true;
-    v.muted = true;
   }
 
+  // desktop hover preview only
   card.addEventListener("mouseenter",()=>{
     if(!window.matchMedia("(hover:hover)").matches) return;
-    if(card.dataset.playing==="1") return;
     if(!v) return;
     v.muted = true;
     v.play().catch(()=>{});
   });
-
   card.addEventListener("mouseleave",()=>{
     if(!window.matchMedia("(hover:hover)").matches) return;
-    if(card.dataset.playing==="1") return;
     if(!v) return;
     v.pause();
   });
 
+  // click card behavior:
+  // mobile: tap anywhere opens viewer (shorts UX)
+  // desktop: tap anywhere opens viewer too (cleaner, consistent)
   card.addEventListener("click",(e)=>{
-    if(e.target && e.target.closest && e.target.closest("[data-open]")) return;
-
-    if(isMobile()){
-      openViewer(card);
-      return;
-    }
-
-    if(!v || !src) return;
-
-    if(card.dataset.playing==="1"){
-      v.pause();
-      card.dataset.playing="0";
-    }else{
-      pauseAll(card);
-      v.muted = false;
-      v.controls = false;
-      v.play().catch(()=>{});
-      card.dataset.playing="1";
-    }
+    // if clicked the button, its handler will run; we still open viewer
+    openViewer(card);
   });
 
   const openBtn = card.querySelector("[data-open]");
@@ -408,6 +401,7 @@ cards.forEach(card=>{
   }
 });
 
+// mobile scroll: autoplay muted preview on most visible card
 const observer = new IntersectionObserver(entries=>{
   if(!isMobile()) return;
 
@@ -418,12 +412,10 @@ const observer = new IntersectionObserver(entries=>{
   if(visible.length === 0) return;
 
   const card = visible[0].target;
-  if(card.dataset.playing==="1") return;
-
-  const v = card.querySelector("video");
+  const v = card.querySelector(".videoBox video");
   if(!v) return;
 
-  pauseAll(card);
+  pausePreviews(card);
   v.muted = true;
   v.play().catch(()=>{});
 }, { threshold:[0.6,0.8,0.9] });
