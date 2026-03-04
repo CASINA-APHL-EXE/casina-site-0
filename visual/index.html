@@ -253,13 +253,6 @@ cursor:pointer;
 
 <video muted loop playsinline preload="metadata"></video>
 
-<div class="controls">
-
-<div class="ctrl" data-act="play">PLAY</div>
-<div class="ctrl" data-act="mute">UNMUTE</div>
-
-</div>
-
 <div class="overlay"></div>
 
 <div class="meta">
@@ -305,150 +298,119 @@ setTimeout(()=>location.href="/",500);
 const cards=[...document.querySelectorAll(".card")];
 
 function pauseAll(except){
+  cards.forEach(c=>{
+    if(c===except) return;
 
-cards.forEach(c=>{
+    const v=c.querySelector("video");
+    v.pause();
 
-if(c===except)return;
-
-const v=c.querySelector("video");
-v.pause();
-
-c.dataset.playing="0";
-
-});
-
+    c.dataset.playing="0";
+  });
 }
 
 async function playCard(card,fullscreen){
 
-const v=card.querySelector("video");
+  const v=card.querySelector("video");
 
-pauseAll(card);
+  pauseAll(card);
 
-v.muted=false;
+  v.muted=false;
 
-if(fullscreen){
+  if(fullscreen){
 
-if(v.webkitEnterFullscreen)
-v.webkitEnterFullscreen();
+    if(v.webkitEnterFullscreen)
+      v.webkitEnterFullscreen();
 
-else if(v.requestFullscreen)
-await v.requestFullscreen();
+    else if(v.requestFullscreen)
+      await v.requestFullscreen();
 
-}
+  }
 
-await v.play().catch(()=>{});
+  await v.play().catch(()=>{});
 
-card.dataset.playing="1";
-
+  card.dataset.playing="1";
 }
 
 function pauseCard(card){
 
-const v=card.querySelector("video");
+  const v=card.querySelector("video");
 
-v.pause();
+  v.pause();
 
-card.dataset.playing="0";
-
+  card.dataset.playing="0";
 }
 
 cards.forEach(card=>{
 
-const src=card.dataset.src;
-const v=card.querySelector("video");
+  const src=card.dataset.src;
+  const v=card.querySelector("video");
 
-v.src=src;
+  v.src=src;
 
-/* hover preview desktop */
+  v.loop=true;
+  v.playsInline=true;
+  v.muted=true;
 
-card.addEventListener("mouseenter",()=>{
+  /* hover preview (desktop only) */
 
-if(window.matchMedia("(hover:hover)").matches){
+  card.addEventListener("mouseenter",()=>{
 
-v.muted=true;
-v.play().catch(()=>{});
+    if(!window.matchMedia("(hover:hover)").matches) return;
 
-}
+    if(card.dataset.playing==="1") return;
 
-});
+    v.muted=true;
+    v.play().catch(()=>{});
 
-card.addEventListener("mouseleave",()=>{
+  });
 
-if(window.matchMedia("(hover:hover)").matches){
+  card.addEventListener("mouseleave",()=>{
 
-if(card.dataset.playing!=="1")
-v.pause();
+    if(!window.matchMedia("(hover:hover)").matches) return;
 
-}
+    if(card.dataset.playing==="1") return;
 
-});
+    v.pause();
 
-/* click card */
+  });
 
-card.addEventListener("click",()=>{
+  /* click interaction */
 
-if(card.dataset.playing==="1")
-pauseCard(card);
-else
-playCard(card,window.innerWidth<720);
+  card.addEventListener("click",()=>{
 
-});
+    if(card.dataset.playing==="1"){
 
-/* buttons */
+      pauseCard(card);
 
-card.querySelectorAll(".ctrl").forEach(btn=>{
+    }else{
 
-btn.addEventListener("click",e=>{
+      playCard(card,window.innerWidth<720);
 
-e.stopPropagation();
+    }
 
-const act=btn.dataset.act;
-
-if(act==="play"){
-
-if(card.dataset.playing==="1")
-pauseCard(card);
-else
-playCard(card,true);
-
-}
-
-if(act==="mute"){
-
-v.muted=!v.muted;
-
-btn.textContent=v.muted?"UNMUTE":"MUTE";
-
-}
+  });
 
 });
 
-});
-
-});
-
-/* mobile scroll autoplay preview */
+/* mobile scroll preview */
 
 const observer=new IntersectionObserver(entries=>{
 
-entries.forEach(e=>{
+  entries.forEach(e=>{
 
-if(e.isIntersecting){
+    if(!e.isIntersecting) return;
 
-const card=e.target;
-const v=card.querySelector("video");
+    const card=e.target;
+    const v=card.querySelector("video");
 
-if(window.innerWidth<720){
+    if(window.innerWidth<720){
 
-v.muted=true;
-v.play().catch(()=>{});
+      v.muted=true;
+      v.play().catch(()=>{});
 
-}
+    }
 
-}
-
-});
+  });
 
 },{threshold:.6});
 
