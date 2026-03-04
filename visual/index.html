@@ -16,22 +16,28 @@
 
   --pad: clamp(14px,2vw,24px);
   --radius:8px;
-  --stroke:rgba(0,255,255,.20);
-  --panel:rgba(0,255,255,.05);
+  --shadow: 0 0 40px rgba(0,255,255,.08);
 }
 
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--c);font-family:monospace}
+html,body{height:100%}
 body{
-  min-height:100svh;
-  opacity:1;
-  transition:opacity .6s ease,filter .6s ease;
+  margin:0;
+  background:var(--bg);
+  color:var(--c);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
   overflow-x:hidden;
 }
-body.is-entering{opacity:0;filter:blur(2px)}
-html.is-transitioning body{opacity:0;filter:blur(2px)}
 
-.safe{
+/* page transition (simple) */
+html.is-transitioning body{ opacity:0; filter: blur(10px); transform: translateY(6px); transition: .5s ease; }
+body.is-entering{ opacity:0; filter: blur(10px); transform: translateY(6px); }
+body{ transition: .5s ease; }
+
+/* top bar */
+.shell{
   padding:
     calc(var(--pad) + env(safe-area-inset-top))
     calc(var(--pad) + env(safe-area-inset-right))
@@ -39,142 +45,103 @@ html.is-transitioning body{opacity:0;filter:blur(2px)}
     calc(var(--pad) + env(safe-area-inset-left));
 }
 
-.topbar{
+.top{
   display:flex;
+  align-items:center;
   justify-content:space-between;
-  align-items:flex-start;
-  flex-wrap:wrap;
-  gap:10px;
+  gap:16px;
+  margin-bottom: clamp(14px,2vw,18px);
 }
-.title{
+
+.h1{
   font-size:var(--fs-2);
   letter-spacing:var(--ls-1);
-  opacity:.85;
+  opacity:.95;
 }
-.btn{
+
+.home{
   text-decoration:none;
   color:var(--c);
   border:1px solid rgba(0,255,255,.25);
-  background:rgba(0,255,255,.04);
-  padding:10px 14px;
-  border-radius:14px;
+  background:rgba(0,255,255,.05);
+  padding: 10px 14px;
+  border-radius: 18px;
   font-size:var(--fs-1);
   letter-spacing:var(--ls-1);
-  opacity:.8;
-  white-space:nowrap;
+  opacity:.9;
 }
-.btn:hover{opacity:1}
+.home:hover{opacity:1}
 
 /* GRID */
 .grid{
-  margin-top:30px;
   display:grid;
-  gap:18px;
-  grid-template-columns:repeat(4,1fr);
+  gap: clamp(14px,2vw,18px);
+  grid-template-columns: repeat(4, minmax(0,1fr));
 }
-@media (max-width:1200px){ .grid{grid-template-columns:repeat(3,1fr)} }
-@media (max-width:900px){ .grid{grid-template-columns:repeat(2,1fr)} }
-
+@media (max-width:1100px){ .grid{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
+@media (max-width:820px){ .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
 @media (max-width:720px){
   .grid{
-    grid-template-columns:1fr;
-    max-height:calc(100svh - 90px);
-    overflow-y:auto;
-    scroll-snap-type:y mandatory;
-  }
-  .card{
-    scroll-snap-align:start;
-    min-height:calc(100svh - 110px);
+    grid-template-columns: 1fr;
+    gap: 18px;
   }
 }
 
-/* CARD (now: video area + footer, no overlay covering video) */
+/* Card */
 .card{
-  border:1px solid var(--stroke);
-  background:var(--panel);
-  border-radius:var(--radius);
-  clip-path:polygon(0 0,100% 0,100% 95%,95% 100%,0 100%);
+  border:1px solid rgba(0,255,255,.18);
+  border-radius: 16px;
   overflow:hidden;
-  opacity:.92;
-  transition:.2s;
-}
-.card:hover{
-  transform:translateY(-2px);
-  box-shadow:0 0 26px rgba(0,255,255,.10);
-  opacity:1;
-}
-
-.videoBox{
-  position:relative;
-  /* make the window visually taller */
-  aspect-ratio: 9/16;
-  background:#000;
-  overflow:hidden;
-}
-@media (max-width:720px){
-  .videoBox{
-    /* for mobile feed: give more height */
-    height: calc(100svh - 190px);
-    aspect-ratio:auto;
-  }
-}
-
-.videoBox video{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-  opacity:.92;
-  transform:scale(1.02);
-  transition:.2s;
-}
-
-.card:hover .videoBox video{
-  opacity:1;
-  transform:scale(1.05);
-}
-
-.cardFooter{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-end;
-  gap:12px;
-  padding:12px 12px;
-  border-top:1px solid rgba(0,255,255,.12);
-  background:rgba(0,0,0,.18);
-}
-
-.txt{
+  background: rgba(0,255,255,.03);
+  box-shadow: var(--shadow);
   display:flex;
   flex-direction:column;
-  gap:4px;
-  min-width:0;
+}
+
+/* 9:16 video preview */
+.videoBox{
+  aspect-ratio: 9/16;
+  background:#000;
+  position:relative;
+}
+.videoBox video{
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+  background:#000;
+}
+
+/* Footer under video */
+.footer{
+  padding: 14px 14px 14px 14px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+}
+.meta{
+  min-width: 0;
 }
 .name{
-  font-size:var(--fs-1);
-  letter-spacing:var(--ls-1);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  font-size: var(--fs-1);
+  letter-spacing: var(--ls-1);
+  opacity:.92;
+  margin:0 0 8px 0;
 }
 .desc{
-  font-size:var(--fs-1);
-  opacity:.5;
-  letter-spacing:var(--ls-1);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  margin:0;
+  font-size: var(--fs-1);
+  opacity:.65;
+  line-height:1.4;
+  letter-spacing: 1px;
 }
 
 .badge{
   border:1px solid rgba(0,255,255,.22);
-  background:rgba(0,0,0,.35);
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:var(--fs-1);
-  letter-spacing:var(--ls-1);
+  background:rgba(0,255,255,.06);
+  border-radius: 999px;
+  padding: 10px 12px;
   cursor:pointer;
   user-select:none;
   opacity:.9;
@@ -185,101 +152,49 @@ html.is-transitioning body{opacity:0;filter:blur(2px)}
 }
 .badge:hover{opacity:1}
 
-/* VIEWER */
-.viewer{
+/* FULLSCREEN PLAYER */
+.fsVideo{
   position:fixed;
-  inset:0;
-  z-index:99;
-  display:none;
-  background:rgba(0,0,0,.92);
-}
-.viewer.open{display:block;}
-
-.viewerTop{
-  position:absolute;
-  left:0; right:0; top:0;
-  padding:
-    calc(var(--pad) + env(safe-area-inset-top))
-    calc(var(--pad) + env(safe-area-inset-right))
-    10px
-    calc(var(--pad) + env(safe-area-inset-left));
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
+  left:-9999px;
+  top:-9999px;
+  width:1px;
+  height:1px;
+  opacity:0;
+  pointer-events:none;
 }
 
-.viewerTitle{
-  font-size:var(--fs-1);
-  letter-spacing:var(--ls-1);
-  opacity:.7;
-  overflow:hidden;
-  white-space:nowrap;
-  text-overflow:ellipsis;
-}
-
-.viewerClose{
-  border:1px solid rgba(0,255,255,.22);
-  background:rgba(0,255,255,.06);
-  color:var(--c);
-  padding:8px 12px;
-  border-radius:14px;
-  font-size:var(--fs-1);
-  letter-spacing:var(--ls-1);
-  cursor:pointer;
-  opacity:.9;
-  user-select:none;
-}
-.viewerClose:hover{opacity:1}
-
-.viewerStage{
-  position:absolute;
-  left:0; right:0;
-  top:70px;
-  bottom:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding: 18px;
-}
 @media (max-width:720px){
-  .viewerStage{ top:82px; padding: 12px; }
-}
-
-/* portrait-safe: keep full frame, black padding */
-.viewerVideo{
-  width: min(520px, 94vw);
-  max-height: calc(100svh - 140px);
-  height:auto;
-  object-fit: contain;
-  background:#000;
-  border-radius: 14px;
-  border:1px solid rgba(0,255,255,.18);
-  box-shadow: 0 0 60px rgba(0,255,255,.10);
-  display:block;
+  /* make it feel like short-video feed */
+  .card{ scroll-snap-align: start; }
+  .grid{
+    scroll-snap-type: y mandatory;
+    overflow-y:auto;
+    max-height: calc(100svh - 120px);
+    padding-bottom: 10px;
+  }
 }
 </style>
 </head>
 
 <body>
-<div class="safe">
-  <div class="topbar">
-    <div class="title">VISUAL MODULE</div>
-    <a class="btn" href="/">HOME</a>
+<div class="shell">
+  <div class="top">
+    <div class="h1">VISUAL MODULE</div>
+    <a class="home" href="/">HOME</a>
   </div>
 
   <section class="grid" id="grid">
-    <article class="card" data-title="ARTIFACT 01" data-src="/assets/videos/artifact01.mp4">
+    <!-- SAMPLE CARD -->
+    <article class="card" data-src="../assets/videos/artifact01.mp4" data-title="ARTIFACT 01">
       <div class="videoBox">
-        <video muted loop playsinline preload="metadata"></video>
+        <video muted playsinline loop preload="metadata"></video>
       </div>
-      <div class="cardFooter">
-        <div class="txt">
-          <div class="name">ARTIFACT 01</div>
-          <div class="desc">720×1280 · AE fragment</div>
+      <div class="footer">
+        <div class="meta">
+          <p class="name">ARTIFACT 01</p>
+          <p class="desc">720×1280 · AE fragment</p>
         </div>
-        <div class="badge" data-open aria-label="Open viewer">⤢</div>
-        <!-- If you prefer text: replace ⤢ with VIDEO -->
+        <div class="badge" data-open aria-label="Open fullscreen">⤢</div>
       </div>
     </article>
 
@@ -287,15 +202,8 @@ html.is-transitioning body{opacity:0;filter:blur(2px)}
   </section>
 </div>
 
-<div class="viewer" id="viewer" aria-modal="true" role="dialog">
-  <div class="viewerTop">
-    <div class="viewerTitle" id="viewerTitle">ARTIFACT</div>
-    <div class="viewerClose" id="viewerClose">×</div>
-  </div>
-  <div class="viewerStage">
-    <video class="viewerVideo" id="viewerVideo" controls playsinline preload="metadata"></video>
-  </div>
-</div>
+<!-- Hidden fullscreen launcher -->
+<video id="fsVideo" class="fsVideo" controls preload="metadata"></video>
 
 <script>
 document.body.classList.add("is-entering");
@@ -313,10 +221,7 @@ document.querySelectorAll('a[href="/"]').forEach(a=>{
 });
 
 const cards = [...document.querySelectorAll(".card")];
-const viewer = document.getElementById("viewer");
-const viewerTitle = document.getElementById("viewerTitle");
-const viewerVideo = document.getElementById("viewerVideo");
-const viewerClose = document.getElementById("viewerClose");
+const fsVideo = document.getElementById("fsVideo");
 
 function isMobile(){ return window.innerWidth < 720; }
 
@@ -328,38 +233,47 @@ function pausePreviews(except=null){
   });
 }
 
-function openViewer(card){
+function cleanupFsVideo(){
+  // stop & release to avoid holding memory / audio session
+  fsVideo.pause();
+  fsVideo.removeAttribute("src");
+  fsVideo.load();
+}
+
+function openFullscreen(card){
   const src = card.dataset.src || "";
   if(!src) return;
 
-  // hard-stop any preview FIRST => prevents intermediate "transition player" flash
+  // stop any preview FIRST (prevents intermediate flash / double players)
   pausePreviews();
 
-  viewerTitle.textContent = card.dataset.title || "ARTIFACT";
+  fsVideo.pause();
+  fsVideo.src = src;
+  fsVideo.currentTime = 0;
+  fsVideo.muted = false;
 
-  viewerVideo.pause();
-  viewerVideo.src = src;
-  viewerVideo.currentTime = 0;
-  viewerVideo.muted = false;
+  // iOS + desktop policies: must be in the click gesture
+  const tryEnter = ()=>{
+    // Desktop / Android
+    if(fsVideo.requestFullscreen){
+      fsVideo.requestFullscreen().catch(()=>{});
+      return;
+    }
+    // iOS Safari
+    if(fsVideo.webkitEnterFullscreen){
+      try{ fsVideo.webkitEnterFullscreen(); }catch(e){}
+    }
+  };
 
-  viewer.classList.add("open");
-
-  // play after overlay is visible (1 frame later)
-  requestAnimationFrame(()=>{
-    viewerVideo.play().catch(()=>{});
-  });
+  // Start playback (may be required before fullscreen on some browsers)
+  fsVideo.play().then(()=>tryEnter()).catch(()=>tryEnter());
 }
 
-function closeViewer(){
-  viewer.classList.remove("open");
-  viewerVideo.pause();
-  viewerVideo.removeAttribute("src");
-  viewerVideo.load();
-}
-
-viewerClose.addEventListener("click", closeViewer);
-viewer.addEventListener("click",(e)=>{ if(e.target === viewer) closeViewer(); });
-window.addEventListener("keydown",(e)=>{ if(e.key === "Escape" && viewer.classList.contains("open")) closeViewer(); });
+// Exit handlers
+document.addEventListener("fullscreenchange", ()=>{
+  if(!document.fullscreenElement) cleanupFsVideo();
+});
+fsVideo.addEventListener("webkitendfullscreen", cleanupFsVideo);
 
 cards.forEach(card=>{
   const src = card.dataset.src || "";
@@ -385,18 +299,17 @@ cards.forEach(card=>{
   });
 
   // click card behavior:
-  // mobile: tap anywhere opens viewer (shorts UX)
-  // desktop: tap anywhere opens viewer too (cleaner, consistent)
+  // mobile: tap anywhere opens fullscreen (shorts UX)
+  // desktop: tap anywhere opens fullscreen too (cleaner, consistent)
   card.addEventListener("click",(e)=>{
-    // if clicked the button, its handler will run; we still open viewer
-    openViewer(card);
+    openFullscreen(card);
   });
 
   const openBtn = card.querySelector("[data-open]");
   if(openBtn){
     openBtn.addEventListener("click",(e)=>{
       e.stopPropagation();
-      openViewer(card);
+      openFullscreen(card);
     });
   }
 });
