@@ -113,7 +113,7 @@ body{ transition: .5s ease; }
   background:#000;
 }
 
-/* Footer under video */
+/* Footer */
 .footer{
   padding: 14px;
   display:flex;
@@ -122,12 +122,14 @@ body{ transition: .5s ease; }
   gap: 12px;
 }
 .meta{ min-width:0; }
+
 .name{
   font-size: var(--fs-1);
   letter-spacing: var(--ls-1);
   opacity:.92;
   margin:0 0 8px 0;
 }
+
 .desc{
   margin:0;
   font-size: var(--fs-1);
@@ -136,18 +138,17 @@ body{ transition: .5s ease; }
   letter-spacing: 1px;
 }
 
-/* FULLSCREEN PLAYER (kept out of layout, but NOT transparent in fullscreen) */
+/* fullscreen player */
 #fsVideo{
   position:fixed;
   left:-9999px;
   top:-9999px;
-  width: 320px;   /* give it a real size to avoid some desktop fullscreen bugs */
-  height: 180px;
+  width:320px;
+  height:180px;
   background:#000;
   outline:none;
 }
 
-/* Make sure it is visible when in fullscreen (fix: black screen w/ audio on desktop) */
 #fsVideo:fullscreen{
   left:0;
   top:0;
@@ -155,6 +156,7 @@ body{ transition: .5s ease; }
   height:100vh;
   background:#000;
 }
+
 #fsVideo:-webkit-full-screen{
   left:0;
   top:0;
@@ -164,208 +166,163 @@ body{ transition: .5s ease; }
 }
 
 @media (max-width:720px){
-  /* short-video feed feel */
   .card{ scroll-snap-align: start; }
   .grid{
     scroll-snap-type: y mandatory;
     overflow-y:auto;
     max-height: calc(100svh - 120px);
-    padding-bottom: 10px;
+    padding-bottom:10px;
   }
 }
 </style>
 </head>
 
 <body>
+
 <div class="shell">
-  <div class="top">
-    <div class="h1">VISUAL ARCHIVE</div>
-    <a class="home" href="/">HOME</a>
-  </div>
+<div class="top">
+<div class="h1">VISUAL ARCHIVE</div>
+<a class="home" href="/">HOME</a>
+</div>
 
-  <section class="grid" id="grid">
+<section class="grid" id="grid">
 
-  <!-- ARTIFACT 01 -->
-  <article class="card" data-src="../assets/videos/artifact01.mp4" data-title="ARTIFACT 01">
-    <div class="videoBox">
-      <video muted playsinline loop preload="metadata"></video>
-    </div>
-    <div class="footer">
-      <div class="meta">
-        <p class="name">ARTIFACT 01</p>
-        <p class="desc1">visualization · touchdesigner</p>
-        <p class="desc2">music by kuko</p>
-      </div>
-    </div>
-  </article>
+<!-- ARTIFACT 01 -->
+<article class="card" data-src="../assets/videos/artifact01.mp4">
+<div class="videoBox">
+<video poster="../assets/covers/artifact01.png"
+muted playsinline loop preload="metadata"></video>
+</div>
+<div class="footer">
+<div class="meta">
+<p class="name">ARTIFACT 01</p>
+<p class="desc1">visualization · touchdesigner</p>
+<p class="desc2">music by kuko</p>
+</div>
+</div>
+</article>
 
-  <!-- ARTIFACT 02 (placeholder) -->
-  <article class="card" data-src="" data-title="ARTIFACT 02">
-    <div class="videoBox">
-      <video muted playsinline loop preload="metadata"></video>
-    </div>
-    <div class="footer">
-      <div class="meta">
-        <p class="name">ARTIFACT 02</p>
-        <p class="desc1">placeholder</p>
-        <p class="desc2">coming soon</p>
-      </div>
-    </div>
-  </article>
+<!-- ARTIFACT 02 -->
+<article class="card" data-src="">
+<div class="videoBox">
+<video muted playsinline loop preload="metadata"></video>
+</div>
+<div class="footer">
+<div class="meta">
+<p class="name">ARTIFACT 02</p>
+<p class="desc1">placeholder</p>
+<p class="desc2">coming soon</p>
+</div>
+</div>
+</article>
 
-  <!-- ARTIFACT 03 (placeholder) -->
-  <article class="card" data-src="" data-title="ARTIFACT 03">
-    <div class="videoBox">
-      <video muted playsinline loop preload="metadata"></video>
-    </div>
-    <div class="footer">
-      <div class="meta">
-        <p class="name">ARTIFACT 03</p>
-        <p class="desc1">placeholder</p>
-        <p class="desc2">coming soon</p>
-      </div>
-    </div>
-  </article>
+<!-- ARTIFACT 03 -->
+<article class="card" data-src="">
+<div class="videoBox">
+<video muted playsinline loop preload="metadata"></video>
+</div>
+<div class="footer">
+<div class="meta">
+<p class="name">ARTIFACT 03</p>
+<p class="desc1">placeholder</p>
+<p class="desc2">coming soon</p>
+</div>
+</div>
+</article>
 
-  <!-- ARTIFACT 04 -->
-  <article class="card" data-src="../assets/videos/artifact04.mp4" data-title="ARTIFACT 04">
-    <div class="videoBox">
-      <video muted playsinline loop preload="metadata"></video>
-    </div>
-    <div class="footer">
-      <div class="meta">
-        <p class="name">ARTIFACT 04</p>
-        <p class="desc1">visualization · touchdesigner</p>
-        <p class="desc2">music by memento mori</p>
-      </div>
-    </div>
-  </article>
+<!-- ARTIFACT 04 -->
+<article class="card" data-src="../assets/videos/artifact04.mp4">
+<div class="videoBox">
+<video poster="../assets/covers/artifact04.png"
+muted playsinline loop preload="metadata"></video>
+</div>
+<div class="footer">
+<div class="meta">
+<p class="name">ARTIFACT 04</p>
+<p class="desc1">visualization · touchdesigner</p>
+<p class="desc2">music by memento mori</p>
+</div>
+</div>
+</article>
+
 </section>
 </div>
 
-<!-- Fullscreen launcher -->
 <video id="fsVideo" controls preload="metadata"></video>
 
 <script>
-document.body.classList.add("is-entering");
-requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.remove("is-entering")));
-window.addEventListener("pageshow",()=>{
-  document.documentElement.classList.remove("is-transitioning");
-  document.body.classList.remove("is-entering");
-});
-document.querySelectorAll('a[href="/"]').forEach(a=>{
-  a.addEventListener("click",(e)=>{
-    e.preventDefault();
-    document.documentElement.classList.add("is-transitioning");
-    setTimeout(()=>location.href="/",500);
-  });
-});
-
-const cards = [...document.querySelectorAll(".card")];
-const fsVideo = document.getElementById("fsVideo");
-
-function isMobile(){ return window.innerWidth < 720; }
+const cards=[...document.querySelectorAll(".card")]
+const fsVideo=document.getElementById("fsVideo")
 
 function pausePreviews(except=null){
-  cards.forEach(c=>{
-    if(except && c===except) return;
-    const v = c.querySelector(".videoBox video");
-    if(v) v.pause();
-  });
+cards.forEach(c=>{
+if(except&&c===except)return
+const v=c.querySelector("video")
+if(v)v.pause()
+})
 }
 
 function cleanupFsVideo(){
-  fsVideo.pause();
-  fsVideo.removeAttribute("src");
-  fsVideo.load();
+fsVideo.pause()
+fsVideo.removeAttribute("src")
+fsVideo.load()
 }
 
-// Exit handlers
-document.addEventListener("fullscreenchange", ()=>{
-  if(!document.fullscreenElement) cleanupFsVideo();
-});
-fsVideo.addEventListener("webkitendfullscreen", cleanupFsVideo);
+document.addEventListener("fullscreenchange",()=>{
+if(!document.fullscreenElement)cleanupFsVideo()
+})
+
+fsVideo.addEventListener("webkitendfullscreen",cleanupFsVideo)
 
 async function openFullscreen(card){
-  const src = card.dataset.src || "";
-  if(!src) return;
+const src=card.dataset.src
+if(!src)return
 
-  // stop any preview FIRST (prevents intermediate flash / double players)
-  pausePreviews();
+pausePreviews()
 
-  // force controls always on
-  fsVideo.controls = true;
-  fsVideo.setAttribute("controls","");
+fsVideo.src=src
+fsVideo.currentTime=0
+fsVideo.muted=false
 
-  fsVideo.pause();
-  fsVideo.src = src;
-  fsVideo.currentTime = 0;
-  fsVideo.muted = false;
-  fsVideo.playsInline = false;
+if(fsVideo.requestFullscreen){
+await fsVideo.requestFullscreen()
+await fsVideo.play()
+return
+}
 
-  // Desktop / Android: request fullscreen first, then play (more reliable for controls + video paint)
-  if (fsVideo.requestFullscreen){
-    try{ await fsVideo.requestFullscreen(); }catch(e){}
-    try{ await fsVideo.play(); }catch(e){}
-    return;
-  }
+await fsVideo.play()
 
-  // iOS Safari: play, then enter fullscreen
-  try{
-    await fsVideo.play();
-    if (fsVideo.webkitEnterFullscreen){
-      try{ fsVideo.webkitEnterFullscreen(); }catch(e){}
-    }
-  }catch(e){}
+if(fsVideo.webkitEnterFullscreen){
+fsVideo.webkitEnterFullscreen()
+}
 }
 
 cards.forEach(card=>{
-  const src = card.dataset.src || "";
-  const v = card.querySelector(".videoBox video");
-  if(src && v){
-    v.src = src;
-    v.muted = true;
-    v.loop = true;
-    v.playsInline = true;
-  }
+const src=card.dataset.src
+const v=card.querySelector("video")
 
-  // desktop hover preview only
-  card.addEventListener("mouseenter",()=>{
-    if(!window.matchMedia("(hover:hover)").matches) return;
-    if(!v) return;
-    v.muted = true;
-    v.play().catch(()=>{});
-  });
-  card.addEventListener("mouseleave",()=>{
-    if(!window.matchMedia("(hover:hover)").matches) return;
-    if(!v) return;
-    v.pause();
-  });
+if(src&&v){
+v.src=src
+v.muted=true
+v.loop=true
+v.playsInline=true
+}
 
-  // click anywhere opens fullscreen
-  card.addEventListener("click",()=>openFullscreen(card));
-});
+card.addEventListener("mouseenter",()=>{
+if(!window.matchMedia("(hover:hover)").matches)return
+if(!v)return
+v.play().catch(()=>{})
+})
 
-// mobile scroll: autoplay muted preview on most visible card
-const observer = new IntersectionObserver(entries=>{
-  if(!isMobile()) return;
+card.addEventListener("mouseleave",()=>{
+if(!window.matchMedia("(hover:hover)").matches)return
+if(!v)return
+v.pause()
+})
 
-  const visible = entries
-    .filter(e=>e.isIntersecting)
-    .sort((a,b)=> b.intersectionRatio - a.intersectionRatio);
-
-  if(visible.length === 0) return;
-
-  const card = visible[0].target;
-  const v = card.querySelector(".videoBox video");
-  if(!v) return;
-
-  pausePreviews(card);
-  v.muted = true;
-  v.play().catch(()=>{});
-}, { threshold:[0.6,0.8,0.9] });
-
-cards.forEach(c=>observer.observe(c));
+card.addEventListener("click",()=>openFullscreen(card))
+})
 </script>
+
 </body>
 </html>
