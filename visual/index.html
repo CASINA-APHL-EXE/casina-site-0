@@ -21,22 +21,35 @@
 
 *{box-sizing:border-box}
 html,body{height:100%}
+
 body{
   margin:0;
   background:var(--bg);
   color:var(--c);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
   overflow-x:hidden;
 }
 
 /* page transition */
-html.is-transitioning body{ opacity:0; filter: blur(10px); transform: translateY(6px); transition: .5s ease; }
-body.is-entering{ opacity:0; filter: blur(10px); transform: translateY(6px); }
-body{ transition: .5s ease; }
+html.is-transitioning body{
+  opacity:0;
+  filter: blur(10px);
+  transform: translateY(6px);
+  transition:.5s ease;
+}
+
+body.is-entering{
+  opacity:0;
+  filter: blur(10px);
+  transform: translateY(6px);
+}
+
+body{ transition:.5s ease }
 
 /* top bar */
+
 .shell{
   padding:
     calc(var(--pad) + env(safe-area-inset-top))
@@ -47,16 +60,14 @@ body{ transition: .5s ease; }
 
 .top{
   display:flex;
-  align-items:center;
   justify-content:space-between;
-  gap:16px;
+  align-items:center;
   margin-bottom: clamp(14px,2vw,18px);
 }
 
 .h1{
   font-size:var(--fs-2);
   letter-spacing:var(--ls-1);
-  opacity:.95;
 }
 
 .home{
@@ -64,33 +75,39 @@ body{ transition: .5s ease; }
   color:var(--c);
   border:1px solid rgba(0,255,255,.25);
   background:rgba(0,255,255,.05);
-  padding: 10px 14px;
-  border-radius: 18px;
+  padding:10px 14px;
+  border-radius:18px;
   font-size:var(--fs-1);
-  letter-spacing:var(--ls-1);
-  opacity:.9;
 }
-.home:hover{opacity:1}
 
 /* GRID */
+
 .grid{
   display:grid;
   gap: clamp(14px,2vw,18px);
   grid-template-columns: repeat(4, minmax(0,1fr));
 }
-@media (max-width:1100px){ .grid{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
-@media (max-width:820px){ .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
+
+@media (max-width:1100px){
+  .grid{ grid-template-columns: repeat(3,1fr); }
+}
+
+@media (max-width:820px){
+  .grid{ grid-template-columns: repeat(2,1fr); }
+}
+
 @media (max-width:720px){
   .grid{
-    grid-template-columns: 1fr;
-    gap: 18px;
+    grid-template-columns:1fr;
+    gap:18px;
   }
 }
 
 /* Card */
+
 .card{
   border:1px solid rgba(0,255,255,.18);
-  border-radius: 16px;
+  border-radius:16px;
   overflow:hidden;
   background: rgba(0,255,255,.03);
   box-shadow: var(--shadow);
@@ -99,80 +116,71 @@ body{ transition: .5s ease; }
   cursor:pointer;
 }
 
-/* 9:16 video preview */
+/* video */
+
 .videoBox{
-  aspect-ratio: 9/16;
+  aspect-ratio:9/16;
   background:#000;
   position:relative;
 }
+
 .videoBox video{
   width:100%;
   height:100%;
-  object-fit: cover;
+  object-fit:cover;
   display:block;
-  background:#000;
 }
 
-/* Footer */
-.footer{
-  padding: 14px;
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap: 12px;
+/* hide video temporarily to show poster */
+
+.videoBox video.hide{
+  opacity:0;
 }
-.meta{ min-width:0; }
+
+/* footer */
+
+.footer{
+  padding:14px;
+}
 
 .name{
-  font-size: var(--fs-1);
-  letter-spacing: var(--ls-1);
-  opacity:.92;
-  margin:0 0 8px 0;
+  font-size:var(--fs-1);
+  margin-bottom:6px;
 }
 
-.desc{
-  margin:0;
-  font-size: var(--fs-1);
+.desc1,.desc2{
+  font-size:var(--fs-1);
   opacity:.65;
-  line-height:1.4;
-  letter-spacing: 1px;
 }
 
 /* fullscreen player */
+
 #fsVideo{
   position:fixed;
   left:-9999px;
   top:-9999px;
   width:320px;
   height:180px;
-  background:#000;
-  outline:none;
 }
 
-#fsVideo:fullscreen{
-  left:0;
-  top:0;
-  width:100vw;
-  height:100vh;
-  background:#000;
-}
-
+#fsVideo:fullscreen,
 #fsVideo:-webkit-full-screen{
   left:0;
   top:0;
   width:100vw;
   height:100vh;
-  background:#000;
 }
 
 @media (max-width:720px){
-  .card{ scroll-snap-align: start; }
-  .grid{
-    scroll-snap-type: y mandatory;
-    overflow-y:auto;
-    max-height: calc(100svh - 120px);
-    padding-bottom:10px;
-  }
+
+.card{ scroll-snap-align:start }
+
+.grid{
+  scroll-snap-type:y mandatory;
+  overflow-y:auto;
+  max-height:calc(100svh - 120px);
+}
+
 }
 </style>
 </head>
@@ -180,68 +188,65 @@ body{ transition: .5s ease; }
 <body>
 
 <div class="shell">
+
 <div class="top">
 <div class="h1">VISUAL ARCHIVE</div>
 <a class="home" href="/">HOME</a>
 </div>
 
-<section class="grid" id="grid">
+<section class="grid">
 
 <!-- ARTIFACT 01 -->
+
 <article class="card" data-src="../assets/videos/artifact01.mp4">
 <div class="videoBox">
 <video poster="../assets/covers/artifact01.png"
 muted playsinline loop preload="metadata"></video>
 </div>
 <div class="footer">
-<div class="meta">
 <p class="name">ARTIFACT 01</p>
 <p class="desc1">visualization · touchdesigner</p>
 <p class="desc2">music by kuko</p>
 </div>
-</div>
 </article>
 
 <!-- ARTIFACT 02 -->
+
 <article class="card" data-src="">
 <div class="videoBox">
 <video muted playsinline loop preload="metadata"></video>
 </div>
 <div class="footer">
-<div class="meta">
 <p class="name">ARTIFACT 02</p>
 <p class="desc1">placeholder</p>
 <p class="desc2">coming soon</p>
 </div>
-</div>
 </article>
 
 <!-- ARTIFACT 03 -->
+
 <article class="card" data-src="">
 <div class="videoBox">
 <video muted playsinline loop preload="metadata"></video>
 </div>
 <div class="footer">
-<div class="meta">
 <p class="name">ARTIFACT 03</p>
 <p class="desc1">placeholder</p>
 <p class="desc2">coming soon</p>
 </div>
-</div>
 </article>
 
 <!-- ARTIFACT 04 -->
+
 <article class="card" data-src="../assets/videos/artifact04.mp4">
 <div class="videoBox">
 <video poster="../assets/covers/artifact04.png"
 muted playsinline loop preload="metadata"></video>
 </div>
 <div class="footer">
-<div class="meta">
 <p class="name">ARTIFACT 04</p>
 <p class="desc1">visualization · touchdesigner</p>
 <p class="desc2">music by memento mori</p>
-</div>
 </div>
 </article>
 
@@ -251,32 +256,36 @@ muted playsinline loop preload="metadata"></video>
 <video id="fsVideo" controls preload="metadata"></video>
 
 <script>
+
 const cards=[...document.querySelectorAll(".card")]
 const fsVideo=document.getElementById("fsVideo")
 
 function pausePreviews(except=null){
 cards.forEach(c=>{
-if(except&&c===except)return
+if(except && c===except) return
 const v=c.querySelector("video")
-if(v)v.pause()
+if(v) v.pause()
 })
 }
 
-function cleanupFsVideo(){
-fsVideo.pause()
-fsVideo.removeAttribute("src")
-fsVideo.load()
-}
+function showPoster(v){
 
-document.addEventListener("fullscreenchange",()=>{
-if(!document.fullscreenElement)cleanupFsVideo()
+v.pause()
+
+v.classList.add("hide")
+
+requestAnimationFrame(()=>{
+requestAnimationFrame(()=>{
+v.classList.remove("hide")
+})
 })
 
-fsVideo.addEventListener("webkitendfullscreen",cleanupFsVideo)
+}
 
 async function openFullscreen(card){
+
 const src=card.dataset.src
-if(!src)return
+if(!src) return
 
 pausePreviews()
 
@@ -285,9 +294,11 @@ fsVideo.currentTime=0
 fsVideo.muted=false
 
 if(fsVideo.requestFullscreen){
+
 await fsVideo.requestFullscreen()
 await fsVideo.play()
 return
+
 }
 
 await fsVideo.play()
@@ -295,33 +306,45 @@ await fsVideo.play()
 if(fsVideo.webkitEnterFullscreen){
 fsVideo.webkitEnterFullscreen()
 }
+
 }
 
 cards.forEach(card=>{
+
 const src=card.dataset.src
 const v=card.querySelector("video")
 
-if(src&&v){
+if(src && v){
+
 v.src=src
 v.muted=true
 v.loop=true
 v.playsInline=true
+
 }
 
 card.addEventListener("mouseenter",()=>{
-if(!window.matchMedia("(hover:hover)").matches)return
-if(!v)return
+
+if(!window.matchMedia("(hover:hover)").matches) return
+if(!v) return
+
 v.play().catch(()=>{})
+
 })
 
 card.addEventListener("mouseleave",()=>{
-if(!window.matchMedia("(hover:hover)").matches)return
-if(!v)return
-v.pause()
+
+if(!window.matchMedia("(hover:hover)").matches) return
+if(!v) return
+
+showPoster(v)
+
 })
 
 card.addEventListener("click",()=>openFullscreen(card))
+
 })
+
 </script>
 
 </body>
