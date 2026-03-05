@@ -21,35 +21,22 @@
 
 *{box-sizing:border-box}
 html,body{height:100%}
-
 body{
   margin:0;
   background:var(--bg);
   color:var(--c);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
   overflow-x:hidden;
 }
 
 /* page transition */
-html.is-transitioning body{
-  opacity:0;
-  filter: blur(10px);
-  transform: translateY(6px);
-  transition:.5s ease;
-}
-
-body.is-entering{
-  opacity:0;
-  filter: blur(10px);
-  transform: translateY(6px);
-}
-
-body{ transition:.5s ease }
+html.is-transitioning body{ opacity:0; filter: blur(10px); transform: translateY(6px); transition: .5s ease; }
+body.is-entering{ opacity:0; filter: blur(10px); transform: translateY(6px); }
+body{ transition: .5s ease; }
 
 /* top bar */
-
 .shell{
   padding:
     calc(var(--pad) + env(safe-area-inset-top))
@@ -60,14 +47,16 @@ body{ transition:.5s ease }
 
 .top{
   display:flex;
-  justify-content:space-between;
   align-items:center;
+  justify-content:space-between;
+  gap:16px;
   margin-bottom: clamp(14px,2vw,18px);
 }
 
 .h1{
   font-size:var(--fs-2);
   letter-spacing:var(--ls-1);
+  opacity:.95;
 }
 
 .home{
@@ -75,39 +64,33 @@ body{ transition:.5s ease }
   color:var(--c);
   border:1px solid rgba(0,255,255,.25);
   background:rgba(0,255,255,.05);
-  padding:10px 14px;
-  border-radius:18px;
+  padding: 10px 14px;
+  border-radius: 18px;
   font-size:var(--fs-1);
+  letter-spacing:var(--ls-1);
+  opacity:.9;
 }
+.home:hover{opacity:1}
 
 /* GRID */
-
 .grid{
   display:grid;
   gap: clamp(14px,2vw,18px);
   grid-template-columns: repeat(4, minmax(0,1fr));
 }
-
-@media (max-width:1100px){
-  .grid{ grid-template-columns: repeat(3,1fr); }
-}
-
-@media (max-width:820px){
-  .grid{ grid-template-columns: repeat(2,1fr); }
-}
-
+@media (max-width:1100px){ .grid{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
+@media (max-width:820px){ .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
 @media (max-width:720px){
   .grid{
-    grid-template-columns:1fr;
-    gap:18px;
+    grid-template-columns: 1fr;
+    gap: 18px;
   }
 }
 
 /* Card */
-
 .card{
   border:1px solid rgba(0,255,255,.18);
-  border-radius:16px;
+  border-radius: 16px;
   overflow:hidden;
   background: rgba(0,255,255,.03);
   box-shadow: var(--shadow);
@@ -116,236 +99,309 @@ body{ transition:.5s ease }
   cursor:pointer;
 }
 
-/* video */
-
+/* 9:16 preview */
 .videoBox{
-  aspect-ratio:9/16;
+  aspect-ratio: 9/16;
   background:#000;
   position:relative;
+  overflow:hidden;
 }
-
 .videoBox video{
   width:100%;
   height:100%;
-  object-fit:cover;
+  object-fit: cover;
   display:block;
+  background:#000;
 }
 
-/* hide video temporarily to show poster */
-
-.videoBox video.hide{
+/* ✅ real cover layer */
+.cover{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+  background:#000;
+  pointer-events:none;
+  opacity:1;
+  transition: opacity .18s ease;
+}
+.cover.hidden{
   opacity:0;
 }
 
-/* footer */
-
+/* Footer under video */
 .footer{
-  padding:14px;
+  padding: 14px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
 }
-
+.meta{ min-width:0; }
 .name{
-  font-size:var(--fs-1);
-  margin-bottom:6px;
+  font-size: var(--fs-1);
+  letter-spacing: var(--ls-1);
+  opacity:.92;
+  margin:0 0 8px 0;
 }
-
 .desc1,.desc2{
-  font-size:var(--fs-1);
+  margin:0;
+  font-size: var(--fs-1);
   opacity:.65;
+  line-height:1.4;
+  letter-spacing: 1px;
 }
 
-/* fullscreen player */
-
+/* FULLSCREEN PLAYER (kept out of layout, but NOT transparent in fullscreen) */
 #fsVideo{
   position:fixed;
   left:-9999px;
   top:-9999px;
-  width:320px;
-  height:180px;
+  width: 320px;
+  height: 180px;
+  background:#000;
+  outline:none;
 }
-
-#fsVideo:fullscreen,
+#fsVideo:fullscreen{
+  left:0;
+  top:0;
+  width:100vw;
+  height:100vh;
+  background:#000;
+}
 #fsVideo:-webkit-full-screen{
   left:0;
   top:0;
   width:100vw;
   height:100vh;
+  background:#000;
 }
 
 @media (max-width:720px){
-
-.card{ scroll-snap-align:start }
-
-.grid{
-  scroll-snap-type:y mandatory;
-  overflow-y:auto;
-  max-height:calc(100svh - 120px);
-}
-
+  .card{ scroll-snap-align: start; }
+  .grid{
+    scroll-snap-type: y mandatory;
+    overflow-y:auto;
+    max-height: calc(100svh - 120px);
+    padding-bottom: 10px;
+  }
 }
 </style>
 </head>
 
 <body>
-
 <div class="shell">
+  <div class="top">
+    <div class="h1">VISUAL ARCHIVE</div>
+    <a class="home" href="/">HOME</a>
+  </div>
 
-<div class="top">
-<div class="h1">VISUAL ARCHIVE</div>
-<a class="home" href="/">HOME</a>
+  <section class="grid" id="grid">
+
+    <!-- ARTIFACT 01 -->
+    <article class="card" data-src="../assets/videos/artifact01.mp4" data-title="ARTIFACT 01">
+      <div class="videoBox">
+        <video muted playsinline loop preload="metadata"></video>
+        <img class="cover" src="../assets/covers/artifact01.png" alt="ARTIFACT 01 cover">
+      </div>
+      <div class="footer">
+        <div class="meta">
+          <p class="name">ARTIFACT 01</p>
+          <p class="desc1">visualization · touchdesigner</p>
+          <p class="desc2">music by kuko</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ARTIFACT 02 (placeholder) -->
+    <article class="card" data-src="" data-title="ARTIFACT 02">
+      <div class="videoBox">
+        <video muted playsinline loop preload="metadata"></video>
+        <!-- no cover image yet: stays black (you can add one later the same way) -->
+      </div>
+      <div class="footer">
+        <div class="meta">
+          <p class="name">ARTIFACT 02</p>
+          <p class="desc1">placeholder</p>
+          <p class="desc2">coming soon</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ARTIFACT 03 (placeholder) -->
+    <article class="card" data-src="" data-title="ARTIFACT 03">
+      <div class="videoBox">
+        <video muted playsinline loop preload="metadata"></video>
+        <!-- no cover image yet -->
+      </div>
+      <div class="footer">
+        <div class="meta">
+          <p class="name">ARTIFACT 03</p>
+          <p class="desc1">placeholder</p>
+          <p class="desc2">coming soon</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ARTIFACT 04 -->
+    <article class="card" data-src="../assets/videos/artifact04.mp4" data-title="ARTIFACT 04">
+      <div class="videoBox">
+        <video muted playsinline loop preload="metadata"></video>
+        <img class="cover" src="../assets/covers/artifact04.png" alt="ARTIFACT 04 cover">
+      </div>
+      <div class="footer">
+        <div class="meta">
+          <p class="name">ARTIFACT 04</p>
+          <p class="desc1">visualization · touchdesigner</p>
+          <p class="desc2">music by memento mori</p>
+        </div>
+      </div>
+    </article>
+
+  </section>
 </div>
 
-<section class="grid">
-
-<!-- ARTIFACT 01 -->
-
-<article class="card" data-src="../assets/videos/artifact01.mp4">
-<div class="videoBox">
-<video poster="../assets/covers/artifact01.png"
-muted playsinline loop preload="metadata"></video>
-</div>
-<div class="footer">
-<p class="name">ARTIFACT 01</p>
-<p class="desc1">visualization · touchdesigner</p>
-<p class="desc2">music by kuko</p>
-</div>
-</article>
-
-<!-- ARTIFACT 02 -->
-
-<article class="card" data-src="">
-<div class="videoBox">
-<video muted playsinline loop preload="metadata"></video>
-</div>
-<div class="footer">
-<p class="name">ARTIFACT 02</p>
-<p class="desc1">placeholder</p>
-<p class="desc2">coming soon</p>
-</div>
-</article>
-
-<!-- ARTIFACT 03 -->
-
-<article class="card" data-src="">
-<div class="videoBox">
-<video muted playsinline loop preload="metadata"></video>
-</div>
-<div class="footer">
-<p class="name">ARTIFACT 03</p>
-<p class="desc1">placeholder</p>
-<p class="desc2">coming soon</p>
-</div>
-</article>
-
-<!-- ARTIFACT 04 -->
-
-<article class="card" data-src="../assets/videos/artifact04.mp4">
-<div class="videoBox">
-<video poster="../assets/covers/artifact04.png"
-muted playsinline loop preload="metadata"></video>
-</div>
-<div class="footer">
-<p class="name">ARTIFACT 04</p>
-<p class="desc1">visualization · touchdesigner</p>
-<p class="desc2">music by memento mori</p>
-</div>
-</article>
-
-</section>
-</div>
-
+<!-- Fullscreen launcher -->
 <video id="fsVideo" controls preload="metadata"></video>
 
 <script>
+document.body.classList.add("is-entering");
+requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.remove("is-entering")));
+window.addEventListener("pageshow",()=>{
+  document.documentElement.classList.remove("is-transitioning");
+  document.body.classList.remove("is-entering");
+});
+document.querySelectorAll('a[href="/"]').forEach(a=>{
+  a.addEventListener("click",(e)=>{
+    e.preventDefault();
+    document.documentElement.classList.add("is-transitioning");
+    setTimeout(()=>location.href="/",500);
+  });
+});
 
-const cards=[...document.querySelectorAll(".card")]
-const fsVideo=document.getElementById("fsVideo")
+const cards = [...document.querySelectorAll(".card")];
+const fsVideo = document.getElementById("fsVideo");
+
+function isMobile(){ return window.innerWidth < 720; }
+
+function setCoverVisible(card, visible){
+  const cover = card.querySelector(".cover");
+  if(!cover) return;
+  cover.classList.toggle("hidden", !visible);
+}
 
 function pausePreviews(except=null){
-cards.forEach(c=>{
-if(except && c===except) return
-const v=c.querySelector("video")
-if(v) v.pause()
-})
+  cards.forEach(c=>{
+    if(except && c===except) return;
+    const v = c.querySelector(".videoBox video");
+    if(v) v.pause();
+    // ✅ paused cards show cover again
+    setCoverVisible(c, true);
+  });
 }
 
-function showPoster(v){
-
-v.pause()
-
-v.classList.add("hide")
-
-requestAnimationFrame(()=>{
-requestAnimationFrame(()=>{
-v.classList.remove("hide")
-})
-})
-
+function cleanupFsVideo(){
+  fsVideo.pause();
+  fsVideo.removeAttribute("src");
+  fsVideo.load();
 }
+
+document.addEventListener("fullscreenchange", ()=>{
+  if(!document.fullscreenElement) cleanupFsVideo();
+});
+fsVideo.addEventListener("webkitendfullscreen", cleanupFsVideo);
 
 async function openFullscreen(card){
+  const src = card.dataset.src || "";
+  if(!src) return;
 
-const src=card.dataset.src
-if(!src) return
+  pausePreviews();
 
-pausePreviews()
+  fsVideo.controls = true;
+  fsVideo.setAttribute("controls","");
 
-fsVideo.src=src
-fsVideo.currentTime=0
-fsVideo.muted=false
+  fsVideo.pause();
+  fsVideo.src = src;
+  fsVideo.currentTime = 0;
+  fsVideo.muted = false;
+  fsVideo.playsInline = false;
 
-if(fsVideo.requestFullscreen){
+  if (fsVideo.requestFullscreen){
+    try{ await fsVideo.requestFullscreen(); }catch(e){}
+    try{ await fsVideo.play(); }catch(e){}
+    return;
+  }
 
-await fsVideo.requestFullscreen()
-await fsVideo.play()
-return
-
-}
-
-await fsVideo.play()
-
-if(fsVideo.webkitEnterFullscreen){
-fsVideo.webkitEnterFullscreen()
-}
-
+  try{
+    await fsVideo.play();
+    if (fsVideo.webkitEnterFullscreen){
+      try{ fsVideo.webkitEnterFullscreen(); }catch(e){}
+    }
+  }catch(e){}
 }
 
 cards.forEach(card=>{
+  const src = card.dataset.src || "";
+  const v = card.querySelector(".videoBox video");
 
-const src=card.dataset.src
-const v=card.querySelector("video")
+  // init: show cover if exists
+  setCoverVisible(card, true);
 
-if(src && v){
+  if(src && v){
+    v.src = src;
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+  }
 
-v.src=src
-v.muted=true
-v.loop=true
-v.playsInline=true
+  // desktop hover preview only
+  card.addEventListener("mouseenter",()=>{
+    if(!window.matchMedia("(hover:hover)").matches) return;
+    if(!v) return;
+    if(!src) return;
 
-}
+    setCoverVisible(card, false);
+    v.muted = true;
+    v.play().catch(()=>{});
+  });
 
-card.addEventListener("mouseenter",()=>{
+  card.addEventListener("mouseleave",()=>{
+    if(!window.matchMedia("(hover:hover)").matches) return;
+    if(!v) return;
 
-if(!window.matchMedia("(hover:hover)").matches) return
-if(!v) return
+    v.pause();                 // keep currentTime
+    setCoverVisible(card, true); // ✅ always return to cover
+  });
 
-v.play().catch(()=>{})
+  // click anywhere opens fullscreen
+  card.addEventListener("click",()=>openFullscreen(card));
+});
 
-})
+// mobile scroll: autoplay muted preview on most visible card
+const observer = new IntersectionObserver(entries=>{
+  if(!isMobile()) return;
 
-card.addEventListener("mouseleave",()=>{
+  const visible = entries
+    .filter(e=>e.isIntersecting)
+    .sort((a,b)=> b.intersectionRatio - a.intersectionRatio);
 
-if(!window.matchMedia("(hover:hover)").matches) return
-if(!v) return
+  if(visible.length === 0) return;
 
-showPoster(v)
+  const card = visible[0].target;
+  const src = card.dataset.src || "";
+  const v = card.querySelector(".videoBox video");
+  if(!v || !src) return;
 
-})
+  pausePreviews(card);
 
-card.addEventListener("click",()=>openFullscreen(card))
+  setCoverVisible(card, false);
+  v.muted = true;
+  v.play().catch(()=>{});
+}, { threshold:[0.6,0.8,0.9] });
 
-})
-
+cards.forEach(c=>observer.observe(c));
 </script>
-
 </body>
 </html>
