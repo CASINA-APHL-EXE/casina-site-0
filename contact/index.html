@@ -69,7 +69,13 @@ html.is-transitioning body{opacity:0;filter:blur(2px)}
   max-width: 900px;
 }
 
-.k{font-size:var(--fs-1);letter-spacing:var(--ls-1);opacity:.55;margin-top:14px}
+.k{
+  font-size:var(--fs-1);
+  letter-spacing:var(--ls-1);
+  opacity:.55;
+  margin-top:18px;
+}
+
 input,textarea{
   width:100%;
   margin-top:8px;
@@ -84,7 +90,13 @@ input,textarea{
 }
 textarea{min-height:140px;resize:vertical}
 
-.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+
 .btn2{
   cursor:pointer;
   border:1px solid rgba(0,255,255,.25);
@@ -98,8 +110,46 @@ textarea{min-height:140px;resize:vertical}
 }
 .btn2:hover{opacity:1}
 
-.note{margin-top:16px;opacity:.45;letter-spacing:var(--ls-1);font-size:var(--fs-1);line-height:1.6}
-a.link{color:var(--c);text-decoration:none;border-bottom:1px dashed rgba(0,255,255,.25);opacity:.8}
+.note{
+  margin-top:16px;
+  opacity:.45;
+  letter-spacing:var(--ls-1);
+  font-size:var(--fs-1);
+  line-height:1.7;
+}
+
+.resume-block{
+  margin-top:10px;
+  opacity:.72;
+  font-size:var(--fs-1);
+  line-height:1.9;
+  letter-spacing:var(--ls-1);
+}
+
+.resume-name{
+  margin-bottom:12px;
+  opacity:.92;
+}
+
+.resume-section{
+  margin-top:18px;
+}
+
+.resume-list{
+  margin:8px 0 0 0;
+  padding-left:18px;
+}
+
+.resume-list li{
+  margin:4px 0;
+}
+
+a.link{
+  color:var(--c);
+  text-decoration:none;
+  border-bottom:1px dashed rgba(0,255,255,.25);
+  opacity:.8;
+}
 a.link:hover{opacity:1}
 </style>
 </head>
@@ -125,6 +175,43 @@ a.link:hover{opacity:1}
       With a background in game development and technical art, I focus on creating work that is both expressive and functional—where aesthetics are supported by underlying logic, and technology becomes part of the artistic language.<br><br>
 
       This portfolio is a collection of artifacts, experiments, and constructed worlds.
+    </div>
+
+    <div class="k">RESUME</div>
+    <div class="resume-block">
+      <div class="resume-name">CASINA GAN — TECHNICAL ARTIST</div>
+
+      <div class="resume-section">
+        <div class="k" style="margin-top:0;">SKILLS</div>
+        <ul class="resume-list">
+          <li>Technical art workflows for real-time projects</li>
+          <li>Procedural thinking, system design, and tool development</li>
+          <li>Game development pipelines and interactive content creation</li>
+          <li>Visual problem-solving across art and technology</li>
+          <li>Experience with digital media, game engines, and experimental workflows</li>
+        </ul>
+      </div>
+
+      <div class="resume-section">
+        <div class="k" style="margin-top:0;">EDUCATION</div>
+        <div>Florida Interactive Entertainment Academy (FIEA), University of Central Florida</div>
+        <div>Technical Art Track</div>
+      </div>
+
+      <div class="resume-section">
+        <div class="k" style="margin-top:0;">FOCUS</div>
+        <div>Technical Art / Real-Time Visual Development / Procedural Workflows / Interactive Systems</div>
+      </div>
+
+      <div class="resume-section">
+        <div class="k" style="margin-top:0;">SELECTED EXPERIENCE</div>
+        <ul class="resume-list">
+          <li>Built portfolio work centered on visual systems, atmosphere, and interactive presentation</li>
+          <li>Developed projects that combine artistic direction with technical structure</li>
+          <li>Explored workflows across game development, real-time media, and system-based design</li>
+          <li>Created experimental digital work that treats interface and presentation as part of the artwork</li>
+        </ul>
+      </div>
     </div>
 
     <div class="k">SUBJECT</div>
@@ -173,7 +260,10 @@ document.querySelectorAll('a[href="/"]').forEach(a=>{
 const subj=document.getElementById("subj");
 const msg=document.getElementById("msg");
 
-document.getElementById("clear").onclick=()=>{subj.value="";msg.value="";};
+document.getElementById("clear").onclick=()=>{
+  subj.value="";
+  msg.value="";
+};
 
 document.getElementById("send").onclick=()=>{
   const s=encodeURIComponent(subj.value || "CASINA SIGNAL");
